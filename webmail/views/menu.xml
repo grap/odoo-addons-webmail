@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright (C) 2023 - Today: OaaFS
+@author: Sylvain LE GAL (https://twitter.com/legalsylvain)
+License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+-->
+<odoo>
+
+    <menuitem
+        id="menu_root"
+        name="Webmail"
+        web_icon="webmail,static/description/icon.png"
+        groups="group_webmail_user"
+    />
+
+    <menuitem
+        id="menu_technical_mail"
+        name="Technical Mails"
+        parent="menu_root"
+        sequence="15"
+    />
+
+    <menuitem
+        id="menu_configuration"
+        name="Configuration"
+        parent="menu_root"
+        sequence="100"
+    />
+
+</odoo>
