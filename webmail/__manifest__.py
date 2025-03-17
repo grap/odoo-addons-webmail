@@ -6,9 +6,9 @@
     "summary": "Odoo as a Webmail",
     "version": "18.0.1.0.0",
     "category": "R&D",
-    "author": "OaaFS",
+    "author": ["GRAP", "OaaFS"],
     "maintainers": ["legalsylvain"],
-    "website": "https://github.com/OCA/mis-builder",
+    "website": "https://github.com/grap/odoo-addons-webmail",
     "license": "AGPL-3",
     "depends": [
         "mail",
