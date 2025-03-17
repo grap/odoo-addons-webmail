@@ -104,7 +104,8 @@ class WebmailFolder(models.Model):
                 client.logout()
                 raise UserError(
                     _(
-                        "Folder %(folder_name)s doesn't exists for account %(account_login)s."
+                        "Folder %(folder_name)s doesn't exists"
+                        " for account %(account_login)s."
                     )
                     % (
                         {
