@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright (C) 2023 - Today: OaaFS
+@author: Sylvain LE GAL (https://twitter.com/legalsylvain)
+License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+-->
+<odoo>
+
+    <record id="view_webmail_account_search" model="ir.ui.view">
+        <field name="model">webmail.account</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="login" />
+                <field name="url" />
+            </search>
+        </field>
+    </record>
+
+    <record id="view_webmail_account_list" model="ir.ui.view">
+        <field name="model">webmail.account</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="login" />
+                <field name="url" />
+                <field name="folder_qty" />
+                <button
+                    string="Fetch Folders"
+                    type="object"
+                    name="button_fetch_folders"
+                />
+                <field name="mail_qty" />
+                <button
+                    string="Fetch Mails (by Batch)"
+                    type="object"
+                    name="button_fetch_mails_by_batch"
+                />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_webmail_account_form" model="ir.ui.view">
+        <field name="model">webmail.account</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        string="Test connexion"
+                        type="object"
+                        name="button_test_connexion"
+                    />
+                    <button
+                        string="Fetch Folders"
+                        type="object"
+                        name="button_fetch_folders"
+                    />
+                    <button
+                        string="Fetch Mails (by Batch)"
+                        type="object"
+                        name="button_fetch_mails_by_batch"
+                    />
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_folders"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-folder-open-o"
+                            invisible="folder_qty == 0"
+                        >
+                            <field
+                                name="folder_qty"
+                                widget="statinfo"
+                                string="Folders"
+                            />
+                        </button>
+                        <button
+                            name="action_view_mails"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-envelope-o"
+                            invisible="mail_qty == 0"
+                        >
+                            <field name="mail_qty" widget="statinfo" string="Mails" />
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="url" />
+                            <field name="login" />
+                            <field name="password" />
+                            <field name="user_id" />
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_webmail_account" model="ir.actions.act_window">
+        <field name="name">Accounts</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">webmail.account</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_webmail_account"
+        name="Accounts"
+        parent="menu_configuration"
+        action="action_webmail_account"
+        sequence="50"
+    />
+
+</odoo>

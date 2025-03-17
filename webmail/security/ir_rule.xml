@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright (C) 2023 - Today: OaaFS
+@author: Sylvain LE GAL (https://twitter.com/legalsylvain)
+License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+-->
+<odoo noupdate="0">
+
+    <record id="ir_rule_webmail_account" model="ir.rule">
+        <field name="name">Webmail Accounts</field>
+        <field name="model_id" ref="model_webmail_account" />
+        <field name="global" eval="True" />
+        <field name="domain_force">[
+            ('user_id', '=', user.id)
+        ]</field>
+    </record>
+
+    <record id="ir_rule_webmail_mail" model="ir.rule">
+        <field name="name">Webmail Mails</field>
+        <field name="model_id" ref="model_webmail_mail" />
+        <field name="global" eval="True" />
+        <field name="domain_force">[
+            ('user_id', '=', user.id)
+        ]</field>
+    </record>
+
+    <record id="ir_rule_webmail_folder" model="ir.rule">
+        <field name="name">Webmail Folders</field>
+        <field name="model_id" ref="model_webmail_folder" />
+        <field name="global" eval="True" />
+        <field name="domain_force">[
+            ('user_id', '=', user.id)
+        ]</field>
+    </record>
+
+</odoo>

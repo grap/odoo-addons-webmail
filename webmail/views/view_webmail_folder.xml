@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright (C) 2023 - Today: OaaFS
+@author: Sylvain LE GAL (https://twitter.com/legalsylvain)
+License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+-->
+<odoo>
+
+    <record id="view_webmail_folder_search" model="ir.ui.view">
+        <field name="model">webmail.folder</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="technical_name" />
+                <field name="webmail_account_id" />
+            </search>
+        </field>
+    </record>
+
+    <record id="view_webmail_folder_list" model="ir.ui.view">
+        <field name="model">webmail.folder</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="technical_name" />
+                <field name="webmail_account_id" />
+                <field name="mail_qty" />
+                    <button
+                    string="Fetch Mails"
+                    type="object"
+                    name="button_fetch_mails"
+                />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_webmail_folder_form" model="ir.ui.view">
+        <field name="model">webmail.folder</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button
+                        string="Fetch Mails"
+                        type="object"
+                        name="button_fetch_mails"
+                    />
+                </header>
+                <sheet>
+
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_mails"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-envelope-o"
+                            invisible="mail_qty == 0"
+                        >
+                            <field name="mail_qty" widget="statinfo" string="Mails" />
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <field name="parent_id" />
+                            <field name="technical_name" />
+                            <field name="webmail_account_id" />
+                        </group>
+                        <group />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_webmail_folder" model="ir.actions.act_window">
+        <field name="name">Folders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">webmail.folder</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="menu_webmail_folder"
+        name="Folders"
+        parent="menu_technical_mail"
+        action="action_webmail_folder"
+        sequence="100"
+    />
+
+</odoo>

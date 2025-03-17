@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_webmail_account_user,Webmail Accounts User,model_webmail_account,webmail.group_webmail_user,1,1,1,1
+access_webmail_mail_user,Webmail Mails User,model_webmail_mail,webmail.group_webmail_user,1,1,1,1
+access_webmail_folder_user,Webmail Folders User,model_webmail_folder,webmail.group_webmail_user,1,1,1,1
+access_webmail_conversation_user,Webmail Conversations User,model_webmail_conversation,webmail.group_webmail_user,1,1,1,1
