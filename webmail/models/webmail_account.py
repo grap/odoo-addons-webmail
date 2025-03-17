@@ -48,7 +48,10 @@ class WebmailAccount(models.Model):
 
     # Action Section
     def button_test_connexion(self):
-        self._test_connexion()
+        self.ensure_one()
+        client = self._get_client_connected()
+        client.close()
+        client.logout()
 
     def button_fetch_folders(self):
         self._fetch_folders()
@@ -75,12 +78,6 @@ class WebmailAccount(models.Model):
         return action
 
     # Private Section
-    def _test_connexion(self):
-        self.ensure_one()
-        client = self._get_client_connected()
-        client.close()
-        client.logout()
-
     def _get_client_connected(self):
         self.ensure_one()
         try:

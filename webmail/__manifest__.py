@@ -29,5 +29,6 @@
     ],
     "demo": [
         "demo/webmail_account.xml",
+        "demo/webmail_folder.xml",
     ],
 }
