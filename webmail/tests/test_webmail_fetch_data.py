@@ -18,10 +18,14 @@ class FakeIMAPClient:
         return
 
     def list(self):
-        return "OK", []
+        return "OK", [
+            b'(\\HasChildren \\UnMarked) "/" Rang&AOk-',
+            b'(\\HasNoChildren \\UnMarked) "/" Rang&AOk-/CIE',
+            b'(\\HasNoChildren \\UnMarked) "/" Rang&AOk-/Coopaname',
+        ]
 
 
-class TestWebmailBadConnexion(TransactionCase):
+class TestWebmailFetchData(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -31,7 +35,21 @@ class TestWebmailBadConnexion(TransactionCase):
 
     def test_connexion(self):
         with mock.patch("imaplib.IMAP4_SSL", return_value=FakeIMAPClient()):
+            # Check Connexion
             self.webmail_account.button_test_connexion()
+            self.assertEqual(len(self.webmail_account.folder_ids), 1)
+
+            # Check Fetch Folders
             self.webmail_account.button_fetch_folders()
-            # TODO, create folder and check
-            # TODO, create mail and check
+            folders = self.webmail_account.folder_ids
+            self.assertEqual(len(folders), 4)
+            self.assertIn("Rangé", folders.mapped("technical_name"))
+            self.assertIn("Rangé/CIE", folders.mapped("technical_name"))
+            self.assertIn("Rangé/Coopaname", folders.mapped("technical_name"))
+
+            self.assertIn("Rangé", folders.mapped("name"))
+            self.assertIn("CIE", folders.mapped("name"))
+            self.assertIn("Coopaname", folders.mapped("name"))
+
+            # Check Fetch Mails
+            # TODO

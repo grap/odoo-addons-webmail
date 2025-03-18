@@ -8,7 +8,7 @@ import socket
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-# import imapclient
+from .tools import decode_imap4_utf7
 
 
 class WebmailAccount(models.Model):
@@ -112,7 +112,8 @@ class WebmailAccount(models.Model):
             client.logout()
 
             for folder_data in folder_datas:
-                technical_name = folder_data.decode().split(' "/" ')[-1]
+                data = decode_imap4_utf7(folder_data.decode())
+                technical_name = data.split(' "/" ')[-1]
                 if technical_name.startswith('"') and technical_name.endswith('"'):
                     technical_name = technical_name[1:-1]
 
