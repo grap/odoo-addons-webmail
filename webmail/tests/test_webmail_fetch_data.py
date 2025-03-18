@@ -26,6 +26,7 @@ class FakeIMAPClient:
             b'(\\HasChildren \\UnMarked) "/" Rang&AOk-',
             b'(\\HasNoChildren \\UnMarked) "/" Rang&AOk-/CIE',
             b'(\\HasNoChildren \\UnMarked) "/" Rang&AOk-/Coopaname',
+            b'(\\HasNoChildren) "/" "&ALI-&-&AOk-(-&AOg-_&AOcA4A-)=^$*&APk-,;:!<"',
         ]
 
     def select(self, arg1):
@@ -55,10 +56,11 @@ class TestWebmailFetchData(TransactionCase):
             # Check Fetch Folders
             self.webmail_account.button_fetch_folders()
             folders = self.webmail_account.folder_ids
-            self.assertEqual(len(folders), 4)
+            self.assertEqual(len(folders), 5)
             self.assertIn("Rangé", folders.mapped("technical_name"))
             self.assertIn("Rangé/CIE", folders.mapped("technical_name"))
             self.assertIn("Rangé/Coopaname", folders.mapped("technical_name"))
+            self.assertIn("²&é(-è_çà)=^$*ù,;:!<", folders.mapped("technical_name"))
 
             self.assertIn("Rangé", folders.mapped("name"))
             self.assertIn("CIE", folders.mapped("name"))
