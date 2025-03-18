@@ -76,20 +76,30 @@ class WebmailMail(models.Model):
             other_mails = self.search(
                 [
                     "|",
+                    "|",
                     ("identifier", "=", mail.reply_identifier),
                     ("reply_identifier", "=", mail.identifier),
+                    ("reply_identifier", "=", mail.reply_identifier),
                 ]
             )
-            if other_mails.mapped("conversation_id"):
+            existing_conversations = other_mails.mapped("conversation_id")
+            if len(existing_conversations) == 0:
+                # That's a new thread, creating a new conversation
+                _logger.info(
+                    f"[ANALYZE] subject: {mail.subject}. Creating new conversation."
+                )
+                mail.conversation_id = self.env["webmail.conversation"].create({}).id
+
+            elif len(existing_conversations) == 1:
                 _logger.info(
                     f"[ANALYZE] subject: {mail.subject}. Found existing conversation."
                 )
                 mail.conversation_id = other_mails.mapped("conversation_id")[0].id
             else:
                 _logger.info(
-                    f"[ANALYZE] subject: {mail.subject}. Creating new conversation."
+                    f"[ANALYZE] subject: {mail.subject}. Found many conversations."
                 )
-                mail.conversation_id = self.env["webmail.conversation"].create({}).id
+                mail.conversation_id = existing_conversations._merge().id
 
     # Overload Section
     @api.model_create_multi

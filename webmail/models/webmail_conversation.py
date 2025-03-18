@@ -6,6 +6,7 @@ import logging
 import re
 
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -14,6 +15,7 @@ class WebmailConversation(models.Model):
     _name = "webmail.conversation"
     _description = "Webmail Conversation"
     _rec_name = "subject"
+    _order = "date desc, subject"
 
     subject = fields.Char(compute="_compute_subject", store=True)
 
@@ -22,6 +24,10 @@ class WebmailConversation(models.Model):
     )
 
     mail_qty = fields.Integer(compute="_compute_mail_qty", store=True)
+
+    date = fields.Datetime(compute="_compute_dates", store=True)
+
+    last_answer_date = fields.Datetime(compute="_compute_dates", store=True)
 
     @api.depends("mail_ids.subject")
     def _compute_subject(self):
@@ -34,7 +40,27 @@ class WebmailConversation(models.Model):
             else:
                 conversation.subject = re.sub(re_prefixes, "", subjects[0])
 
+    @api.depends("mail_ids.date")
+    def _compute_dates(self):
+        for conversation in self:
+            dates = conversation.mapped("mail_ids.date")
+            conversation.date = min(dates)
+            conversation.last_answer_date = min(dates)
+
     @api.depends("mail_ids.conversation_id")
     def _compute_mail_qty(self):
         for conversation in self:
             conversation.mail_qty = len(conversation.mail_ids)
+
+    def _merge(self):
+        if len(self) <= 1:
+            raise UserError(_("Merge conversation requires many conversation"))
+
+        # Get the first
+        first_conversation = self[-1:]
+        other_conversations = self[:-1]
+
+        # Move the mails
+        other_conversations.mail_ids.conversation_id = first_conversation
+        other_conversations.unlink()
+        return first_conversation
