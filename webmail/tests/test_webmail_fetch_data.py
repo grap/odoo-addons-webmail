@@ -93,5 +93,5 @@ class TestWebmailFetchData(TransactionCase):
                 ),
             )
 
-            # Check Fetch Mails
-            # TODO
+            self.assertEqual(mail.conversation_id.subject, "Test Subject")
+            self.assertEqual(mail.conversation_id.mail_qty, 1)
