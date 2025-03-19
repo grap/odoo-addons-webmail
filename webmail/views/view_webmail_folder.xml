@@ -10,7 +10,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="model">webmail.folder</field>
         <field name="arch" type="xml">
             <search>
-                <field name="technical_name" />
+                <field name="complete_name" />
                 <field name="webmail_account_id" />
             </search>
         </field>
@@ -28,7 +28,6 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 </header>
                 <field name="complete_name" />
                 <field name="parent_id" optional="hide"/>
-                <field name="technical_name" optional="hide"/>
                 <field name="webmail_account_id" optional="show"/>
                 <field name="mail_qty" />
                     <button
