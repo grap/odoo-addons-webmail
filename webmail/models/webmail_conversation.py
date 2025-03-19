@@ -18,7 +18,7 @@ class WebmailConversation(models.Model):
     _name = "webmail.conversation"
     _description = "Webmail Conversation"
     _rec_name = "subject"
-    _order = "date desc, subject"
+    _order = "last_answer_date desc, subject"
 
     subject = fields.Char(compute="_compute_subject", store=True)
 
