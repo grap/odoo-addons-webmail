@@ -20,8 +20,16 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="model">webmail.folder</field>
         <field name="arch" type="xml">
             <list>
-                <field name="technical_name" />
-                <field name="webmail_account_id" />
+                <header>
+                    <button name="button_fetch_mails"
+                    type="object"
+                    string="Fetch Mails"
+                    class="btn-secondary"/>
+                </header>
+                <field name="complete_name" />
+                <field name="parent_id" optional="hide"/>
+                <field name="technical_name" optional="hide"/>
+                <field name="webmail_account_id" optional="show"/>
                 <field name="mail_qty" />
                     <button
                     string="Fetch Mails"

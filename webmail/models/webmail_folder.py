@@ -6,6 +6,8 @@ import logging
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from .tools import decode_imap4_utf7
+
 _logger = logging.getLogger(__name__)
 
 
@@ -13,6 +15,7 @@ class WebmailFolder(models.Model):
     _name = "webmail.folder"
     _description = "Webmail Folders"
     _order = "technical_name"
+    _rec_name = "complete_name"
 
     name = fields.Char(required=True, readonly=True)
 
@@ -44,7 +47,21 @@ class WebmailFolder(models.Model):
 
     technical_name = fields.Char(required=True, readonly=True)
 
+    complete_name = fields.Char(
+        compute="_compute_complete_name", recursive=True, store=True
+    )
+
     # Compute Section
+    @api.depends("name", "parent_id.name")
+    def _compute_complete_name(self):
+        for folder in self:
+            if folder.parent_id:
+                folder.complete_name = " / ".join(
+                    [folder.parent_id.complete_name, folder.name]
+                )
+            else:
+                folder.complete_name = folder.name
+
     @api.depends("mail_ids")
     def _compute_mail_qty(self):
         for folder in self:
@@ -63,7 +80,14 @@ class WebmailFolder(models.Model):
         return action
 
     # Private Section
-    def _get_or_create(self, webmail_account, technical_name):
+    def _create_if_not_exists(self, webmail_account, folder_data):
+        complete_name = decode_imap4_utf7(folder_data.decode()).split(' "/" ')[-1]
+        technical_name = folder_data.decode().split(' "/" ')[-1]
+        if technical_name.startswith('"') and technical_name.endswith('"'):
+            technical_name = technical_name[1:-1]
+        self._recursive_get_or_create(webmail_account, complete_name, technical_name)
+
+    def _recursive_get_or_create(self, webmail_account, complete_name, technical_name):
         separator = "/"
         # Check if folder exist in Odoo
         existing_folder = self.search(
@@ -75,17 +99,20 @@ class WebmailFolder(models.Model):
         if existing_folder:
             return existing_folder
 
-        name_parts = technical_name.split(separator)
+        technical_name_parts = technical_name.split(separator)
+        complete_name_parts = complete_name.split(separator)
         vals = {
             "webmail_account_id": webmail_account.id,
             "technical_name": technical_name,
-            "name": name_parts[-1],
+            "name": complete_name_parts[-1],
         }
         if separator in technical_name:
             vals.update(
                 {
-                    "parent_id": self._get_or_create(
-                        webmail_account, separator.join(name_parts[:-1])
+                    "parent_id": self._recursive_get_or_create(
+                        webmail_account,
+                        separator.join(complete_name_parts[:-1]),
+                        separator.join(technical_name_parts[:-1]),
                     ).id
                 }
             )

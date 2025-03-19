@@ -8,13 +8,10 @@ import socket
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from .tools import decode_imap4_utf7
-
 
 class WebmailAccount(models.Model):
     _name = "webmail.account"
     _description = "Webmail Accounts"
-
     _rec_name = "login"
 
     url = fields.Char(required=True)
@@ -112,9 +109,4 @@ class WebmailAccount(models.Model):
             client.logout()
 
             for folder_data in folder_datas:
-                data = decode_imap4_utf7(folder_data.decode())
-                technical_name = data.split(' "/" ')[-1]
-                if technical_name.startswith('"') and technical_name.endswith('"'):
-                    technical_name = technical_name[1:-1]
-
-                self.env["webmail.folder"]._get_or_create(account, technical_name)
+                self.env["webmail.folder"]._create_if_not_exists(account, folder_data)
