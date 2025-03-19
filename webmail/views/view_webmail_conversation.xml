@@ -19,6 +19,13 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="model">webmail.conversation</field>
         <field name="arch" type="xml">
             <list>
+                <header>
+                    <button name="button_merge"
+                    type="object"
+                    string="Merge"
+                    class="btn-secondary"
+                    confirm="Are you sure you want to merge those conversations ?"/>
+                </header>
                 <field name="subject" />
                 <field name="mail_qty" />
             </list>

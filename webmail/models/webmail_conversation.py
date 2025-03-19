@@ -29,6 +29,9 @@ class WebmailConversation(models.Model):
 
     last_answer_date = fields.Datetime(compute="_compute_dates", store=True)
 
+    def button_merge(self):
+        self._merge()
+
     @api.depends("mail_ids.subject")
     def _compute_subject(self):
         for conversation in self.filtered(lambda x: x.subject is False):
