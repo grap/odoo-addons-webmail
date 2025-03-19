@@ -27,6 +27,9 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     confirm="Are you sure you want to merge those conversations ?"/>
                 </header>
                 <field name="subject" />
+                <field name="date" optional="hide"/>
+                <field name="last_answer_date" optional="hide"/>
+                <field name="display_date" optional="show"/>
                 <field name="mail_qty" />
             </list>
         </field>

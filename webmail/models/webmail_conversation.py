@@ -2,8 +2,11 @@
 # @author: Sylvain LE GAL (https://twitter.com/legalsylvain)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
+import datetime
 import logging
 import re
+
+from dateutil.relativedelta import relativedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -29,8 +32,43 @@ class WebmailConversation(models.Model):
 
     last_answer_date = fields.Datetime(compute="_compute_dates", store=True)
 
-    def button_merge(self):
-        self._merge()
+    display_date = fields.Char(compute="_compute_display_date")
+
+    @api.depends("last_answer_date")
+    def _compute_display_date(self):
+        ctx_today = fields.Datetime.context_timestamp(
+            self, fields.Datetime.from_string(datetime.datetime.today())
+        )
+        for conversation in self:
+            if not conversation.last_answer_date:
+                conversation.display_date = ""
+                continue
+
+            ctx_date = fields.Datetime.context_timestamp(
+                self, fields.Datetime.from_string(conversation.last_answer_date)
+            )
+            # last answer has been done today, displaying 'HH:MM'
+            if (
+                ctx_today.day == ctx_date.day
+                and ctx_today.month == ctx_date.month
+                and ctx_today.year == ctx_date.year
+            ):
+                conversation.display_date = ctx_date.strftime("%H:%M")
+                continue
+
+            ctx_3m_date = fields.Datetime.context_timestamp(
+                self,
+                datetime.datetime(ctx_today.year, ctx_today.month, 1)
+                + relativedelta(months=-2),
+            )
+
+            # last answer has been done in the 3 last monthes, displaying "DD month"
+            if ctx_3m_date < ctx_date:
+                conversation.display_date = ctx_date.strftime("%-d %B")
+                continue
+
+            # last answer is old. displaying classic date
+            conversation.display_date = ctx_date.strftime("%d/%m/%Y")
 
     @api.depends("mail_ids.subject")
     def _compute_subject(self):
@@ -54,6 +92,9 @@ class WebmailConversation(models.Model):
     def _compute_mail_qty(self):
         for conversation in self:
             conversation.mail_qty = len(conversation.mail_ids)
+
+    def button_merge(self):
+        self._merge()
 
     def _merge(self):
         if len(self) <= 1:
