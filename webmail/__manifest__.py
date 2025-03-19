@@ -26,6 +26,7 @@
         "views/view_webmail_folder.xml",
         "views/view_webmail_mail.xml",
         "views/view_webmail_conversation.xml",
+        "views/view_webmail_contact.xml",
     ],
     "demo": [
         "demo/webmail_account.xml",

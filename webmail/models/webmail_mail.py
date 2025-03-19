@@ -1,7 +1,6 @@
 # Copyright (C) 2023 - Today: OaaFS
 # @author: Sylvain LE GAL (https://twitter.com/legalsylvain)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-
 import email
 import hashlib
 import logging
@@ -58,11 +57,25 @@ class WebmailMail(models.Model):
 
     from_text = fields.Char(readonly=True)
 
+    from_contact_id = fields.Many2one(
+        comodel_name="webmail.contact",
+        compute="_compute_from_contact_id",
+        store=True,
+        ondelete="set null",
+    )
+
     to_text = fields.Char(readonly=True)
 
     cc_text = fields.Char(readonly=True)
 
     body = fields.Html("Contents", readonly=True, sanitize_style=True)
+
+    @api.depends("from_text")
+    def _compute_from_contact_id(self):
+        for mail in self:
+            mail.from_contact_id = self.env["webmail.contact"]._get_or_create(
+                mail.from_text
+            )
 
     @api.depends("reply_identifier")
     def _compute_origin_mail_id(self):
