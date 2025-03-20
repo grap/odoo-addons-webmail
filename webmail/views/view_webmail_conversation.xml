@@ -42,18 +42,35 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
             <form>
                 <header />
                 <sheet>
-                    <div class="oe_button_box" name="button_box" />
-                    <group>
-                        <field name="mail_ids" nolabel="1">
-                            <list>
-                                <field name="identifier" optional="hide" />
-                                <field name="reply_identifier" optional="hide" />
-                                <field name="date" optional="show" />
-                                <field name="from_text" optional="show" />
-                                <field name="body" widget="html_mail" optional="show" />
-                            </list>
-                        </field>
-                    </group>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_mails"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-envelope-o"
+                            invisible="mail_qty == 0"
+                        >
+                            <field name="mail_qty" widget="statinfo" string="Mails" />
+                        </button>
+                    </div>
+                    <notebook>
+                        <page string="Content">
+                            <field name="content" widget="html_mail" />
+                        </page>
+                        <page string="Mails">
+                            <group>
+                                <field name="mail_ids" nolabel="1">
+                                    <list>
+                                        <field name="identifier" optional="hide" />
+                                        <field name="reply_identifier" optional="hide" />
+                                        <field name="date" optional="show" />
+                                        <field name="from_text" optional="show" />
+                                        <field name="body" widget="html_mail" optional="show" />
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+                    </notebook>
                 </sheet>
             </form>
         </field>

@@ -38,6 +38,13 @@ class WebmailConversation(models.Model):
         comodel_name="webmail.contact", compute="_compute_interlocutor_ids"
     )
 
+    content = fields.Html("Contents", compute="_compute_content")
+
+    @api.depends("mail_ids.body")
+    def _compute_content(self):
+        for conversation in self:
+            conversation.content = "<hr/>".join(conversation.mapped("mail_ids.body"))
+
     @api.depends("mail_ids.author_contact_id")
     def _compute_interlocutor_ids(self):
         for conversation in self:
@@ -106,6 +113,14 @@ class WebmailConversation(models.Model):
     def _compute_mail_qty(self):
         for conversation in self:
             conversation.mail_qty = len(conversation.mail_ids)
+
+    def action_view_mails(self):
+        mails = self.mapped("mail_ids")
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "webmail.action_webmail_mail"
+        )
+        action["domain"] = [("id", "in", mails.ids)]
+        return action
 
     def button_merge(self):
         self._merge()
