@@ -58,6 +58,9 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         </group>
                     </group>
                     <notebook>
+                        <page string="Content">
+                            <field name="content" widget="html_mail" />
+                        </page>
                         <page string="body">
                             <field name="body" widget="html_mail" />
                         </page>
@@ -79,6 +82,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
     <record id="action_webmail_mail" model="ir.actions.act_window">
         <field name="name">Mails</field>
+        <field name="path">webmail-mail</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">webmail.mail</field>
         <field name="view_mode">list,form</field>

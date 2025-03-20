@@ -40,10 +40,10 @@ class WebmailConversation(models.Model):
 
     content = fields.Html("Contents", compute="_compute_content")
 
-    @api.depends("mail_ids.body")
+    @api.depends("mail_ids.content")
     def _compute_content(self):
         for conversation in self:
-            conversation.content = "<hr/>".join(conversation.mapped("mail_ids.body"))
+            conversation.content = "<hr/>".join(conversation.mapped("mail_ids.content"))
 
     @api.depends("mail_ids.author_contact_id")
     def _compute_interlocutor_ids(self):

@@ -78,6 +78,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
     <record id="action_webmail_folder" model="ir.actions.act_window">
         <field name="name">Folders</field>
+        <field name="path">webmail-folder</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">webmail.folder</field>
         <field name="view_mode">list,form</field>

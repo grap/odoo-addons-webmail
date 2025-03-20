@@ -72,7 +72,14 @@ class WebmailMail(models.Model):
 
     cc_text = fields.Char(readonly=True)
 
-    body = fields.Html("Contents", readonly=True, sanitize_style=True)
+    body = fields.Html(readonly=True, sanitize_style=True)
+
+    content = fields.Html(compute="_compute_content")
+
+    @api.depends("body")
+    def _compute_content(self):
+        for mail in self:
+            mail.content = mail.body
 
     @api.depends("from_text", "original_from_text")
     def _compute_author_contact_id(self):

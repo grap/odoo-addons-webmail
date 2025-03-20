@@ -55,7 +55,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     </div>
                     <notebook>
                         <page string="Content">
-                            <field name="content" widget="html_mail" />
+                            <field name="content" widget="html_mail" class="hide_reply_and_author"/>
                         </page>
                         <page string="Mails">
                             <group>
@@ -78,6 +78,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
     <record id="action_webmail_conversation" model="ir.actions.act_window">
         <field name="name">Conversations</field>
+        <field name="path">webmail-conversation</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">webmail.conversation</field>
         <field name="view_mode">list,form</field>

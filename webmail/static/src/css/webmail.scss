@@ -1,0 +1,16 @@
+.hide_reply_and_author blockquote {
+    display: none;
+}
+
+.hide_reply_and_author div[data-o-mail-quote="1"] {
+  color: gray;
+}
+
+.hide_reply_and_author span[data-o-mail-quote="1"] {
+  color: gray;
+}
+
+.hide_reply_and_author pre {
+    border: unset;
+    background-color: unset;
+}

@@ -28,6 +28,11 @@
         "views/view_webmail_conversation.xml",
         "views/view_webmail_contact.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "webmail/static/src/css/webmail.scss",
+        ],
+    },
     "demo": [
         "demo/webmail_account.xml",
         "demo/webmail_folder.xml",
