@@ -11,7 +11,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <search>
                 <field name="subject" />
-                <field name="from_text" />
+                <field name="author_contact_id" />
                 <field name="folder_id" />
             </search>
         </field>
@@ -24,7 +24,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="identifier" optional="hide" />
                 <field name="reply_identifier" optional="hide" />
                 <field name="date" />
-                <field name="from_text" />
+                <field name="author_contact_id" />
                 <field name="to_text" optional="hide" />
                 <field name="cc_text" optional="hide" />
                 <field name="subject" />
@@ -47,9 +47,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                             <field name="conversation_id" />
                             <field name="folder_id" />
                             <field name="origin_mail_id" />
+                            <field name="author_contact_id" />
                         </group>
                         <group>
                             <field name="date" />
+                            <field name="original_from_text" />
                             <field name="from_text" />
                             <field name="to_text" />
                             <field name="cc_text" />

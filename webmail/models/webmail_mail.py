@@ -6,6 +6,7 @@ import hashlib
 import logging
 
 from odoo import api, fields, models
+from odoo.tools.mail import decode_message_header, email_split_and_format
 
 _logger = logging.getLogger(__name__)
 
@@ -57,9 +58,11 @@ class WebmailMail(models.Model):
 
     from_text = fields.Char(readonly=True)
 
-    from_contact_id = fields.Many2one(
+    original_from_text = fields.Char(readonly=True)
+
+    author_contact_id = fields.Many2one(
         comodel_name="webmail.contact",
-        compute="_compute_from_contact_id",
+        compute="_compute_author_contact_id",
         store=True,
         ondelete="set null",
     )
@@ -70,11 +73,11 @@ class WebmailMail(models.Model):
 
     body = fields.Html("Contents", readonly=True, sanitize_style=True)
 
-    @api.depends("from_text")
-    def _compute_from_contact_id(self):
+    @api.depends("from_text", "original_from_text")
+    def _compute_author_contact_id(self):
         for mail in self:
-            mail.from_contact_id = self.env["webmail.contact"]._get_or_create(
-                mail.from_text
+            mail.author_contact_id = self.env["webmail.contact"]._get_or_create(
+                mail.original_from_text or mail.from_text
             )
 
     @api.depends("reply_identifier")
@@ -139,6 +142,11 @@ class WebmailMail(models.Model):
 
         message_dict = self.env["mail.thread"].message_parse(email_message)
 
+        if "X-Original-From" in email_message.keys():
+            message_dict["x_original_from"] = email_split_and_format(
+                decode_message_header(email_message, "X-Original-From", separator=",")
+            )
+
         # Check if mail exists in Odoo
         vals = {
             "identifier": identifier,
@@ -147,6 +155,7 @@ class WebmailMail(models.Model):
             "data": data,
             "folder_id": webmail_folder.id,
             "subject": message_dict.get("subject"),
+            "original_from_text": message_dict["x_original_from"],
             "from_text": message_dict["from"],
             "to_text": message_dict["to"],
             "cc_text": message_dict["cc"],
