@@ -40,6 +40,20 @@ class WebmailConversation(models.Model):
 
     content = fields.Html("Contents", compute="_compute_content")
 
+    pending_answer = fields.Boolean(readonly=True)
+
+    answer = fields.Html()
+
+    unread = fields.Boolean()
+
+    answer_contact_ids = fields.Many2many(comodel_name="webmail.contact")
+
+    def button_write_answer(self):
+        self.write({"pending_answer": True})
+
+    def button_drop_answer(self):
+        self.write({"pending_answer": False, "answer": False})
+
     @api.depends("mail_ids.content")
     def _compute_content(self):
         for conversation in self:

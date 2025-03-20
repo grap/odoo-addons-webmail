@@ -119,7 +119,7 @@ class WebmailMail(models.Model):
                 _logger.info(
                     f"[ANALYZE] subject: {mail.subject}. Creating new conversation."
                 )
-                mail.conversation_id = self.env["webmail.conversation"].create({}).id
+                mail.conversation_id = self.env["webmail.conversation"].create().id
 
             elif len(existing_conversations) == 1:
                 _logger.info(
