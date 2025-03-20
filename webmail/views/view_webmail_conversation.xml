@@ -55,7 +55,27 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     </div>
                     <notebook>
                         <page string="Content">
-                            <field name="content" widget="html_mail" class="hide_reply_and_author"/>
+                            <field name="mail_ids">
+                                <kanban class="o_kanban_mobile">
+                                    <field name="author_contact_id"/>
+                                    <field name="date"/>
+                                    <field name="content"/>
+                                    <templates>
+                                        <t t-name="card" class="flex-row kanban_mail_full_screen">
+                                            <main class="w-100 ps-2 pt-1">
+                                                <div>
+                                                    <field name="author_contact_id"/>
+                                                    <field name="date" />
+                                                </div>
+                                                <hr/>
+                                                <div>
+                                                    <field name="content" widget="html_mail" class="hide_reply_and_author"/>
+                                                </div>
+                                            </main>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                            </field>
                         </page>
                         <page string="Mails">
                             <group>

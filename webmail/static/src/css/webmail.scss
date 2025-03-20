@@ -3,14 +3,18 @@
 }
 
 .hide_reply_and_author div[data-o-mail-quote="1"] {
-  color: gray;
+  color: gray !important;
 }
 
 .hide_reply_and_author span[data-o-mail-quote="1"] {
-  color: gray;
+  color: gray !important;
 }
 
 .hide_reply_and_author pre {
     border: unset;
     background-color: unset;
+}
+
+.kanban_mail_full_screen{
+  width: 100% !important;
 }
