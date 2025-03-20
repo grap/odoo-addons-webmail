@@ -34,6 +34,17 @@ class WebmailConversation(models.Model):
 
     display_date = fields.Char(compute="_compute_display_date")
 
+    interlocutor_ids = fields.Many2many(
+        comodel_name="webmail.contact", compute="_compute_interlocutor_ids"
+    )
+
+    @api.depends("mail_ids.from_contact_id")
+    def _compute_interlocutor_ids(self):
+        for conversation in self:
+            conversation.interlocutor_ids = conversation.mapped(
+                "mail_ids.from_contact_id"
+            )
+
     @api.depends("last_answer_date")
     def _compute_display_date(self):
         ctx_today = fields.Datetime.context_timestamp(

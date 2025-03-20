@@ -10,3 +10,6 @@
   * [] avoiding attachments duplication where data are the same.
        (maybe a dedicated module)
 
+
+* HUGE BUG. Something is wrong in the conversation management.
+  it exist a big conversation with mails that has nothing to do...

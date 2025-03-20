@@ -9,6 +9,8 @@ from odoo.exceptions import UserError
 
 class WebmailContact(models.Model):
     _name = "webmail.contact"
+    _inherit = ["avatar.mixin"]
+
     _description = "Webmail Contacts"
 
     name = fields.Char()
