@@ -6,6 +6,7 @@ import hashlib
 import logging
 
 from odoo import api, fields, models
+from odoo.osv import expression
 from odoo.tools.mail import decode_message_header, email_split_and_format
 
 _logger = logging.getLogger(__name__)
@@ -89,15 +90,22 @@ class WebmailMail(models.Model):
     @api.depends("identifier", "reply_identifier")
     def _compute_conversation_id(self):
         for mail in self:
-            other_mails = self.search(
+            domain = expression.OR(
                 [
-                    "|",
-                    "|",
-                    ("identifier", "=", mail.reply_identifier),
-                    ("reply_identifier", "=", mail.identifier),
-                    ("reply_identifier", "=", mail.reply_identifier),
+                    [("identifier", "=", mail.reply_identifier)],
+                    [("reply_identifier", "=", mail.identifier)],
                 ]
             )
+
+            if mail.reply_identifier:
+                domain = expression.OR(
+                    [
+                        domain,
+                        [("reply_identifier", "=", mail.reply_identifier)],
+                    ]
+                )
+
+            other_mails = self.search(domain)
             existing_conversations = other_mails.mapped("conversation_id")
             if len(existing_conversations) == 0:
                 # That's a new thread, creating a new conversation
@@ -155,7 +163,7 @@ class WebmailMail(models.Model):
             "data": data,
             "folder_id": webmail_folder.id,
             "subject": message_dict.get("subject"),
-            "original_from_text": message_dict["x_original_from"],
+            "original_from_text": message_dict.get("x_original_from"),
             "from_text": message_dict["from"],
             "to_text": message_dict["to"],
             "cc_text": message_dict["cc"],

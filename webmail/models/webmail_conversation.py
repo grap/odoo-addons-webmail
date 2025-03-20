@@ -84,20 +84,23 @@ class WebmailConversation(models.Model):
     @api.depends("mail_ids.subject")
     def _compute_subject(self):
         for conversation in self.filtered(lambda x: x.subject is False):
-            re_prefixes = r"(((Re)|(Fwd)|(TR)): )+"
             subjects = conversation.mapped("mail_ids.subject")
             subjects = [x for x in subjects if x]
             if not subjects:
                 conversation.subject = _("No Subject")
             else:
-                conversation.subject = re.sub(re_prefixes, "", subjects[0])
+                conversation.subject = self._clean_subject(subjects[0])
+
+    @api.model
+    def _clean_subject(self, subject):
+        return re.sub(r"(((RE)|(Re)|(Fwd)|(TR)): )+", "", subject)
 
     @api.depends("mail_ids.date")
     def _compute_dates(self):
         for conversation in self:
             dates = conversation.mapped("mail_ids.date")
-            conversation.date = min(dates)
-            conversation.last_answer_date = min(dates)
+            conversation.date = dates and min(dates) or False
+            conversation.last_answer_date = dates and max(dates) or False
 
     @api.depends("mail_ids.conversation_id")
     def _compute_mail_qty(self):
