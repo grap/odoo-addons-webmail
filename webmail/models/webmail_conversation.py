@@ -18,7 +18,7 @@ class WebmailConversation(models.Model):
     _name = "webmail.conversation"
     _description = "Webmail Conversation"
     _rec_name = "subject"
-    _order = "last_answer_date desc, subject"
+    _order = "last_mail_date desc, subject"
 
     subject = fields.Char(compute="_compute_subject", store=True)
 
@@ -28,11 +28,11 @@ class WebmailConversation(models.Model):
 
     mail_qty = fields.Integer(compute="_compute_mail_qty", store=True)
 
-    date = fields.Datetime(compute="_compute_dates", store=True)
+    first_mail_date = fields.Datetime(compute="_compute_dates", store=True)
 
-    last_answer_date = fields.Datetime(compute="_compute_dates", store=True)
+    last_mail_date = fields.Datetime(compute="_compute_dates", store=True)
 
-    display_date = fields.Char(compute="_compute_display_date")
+    last_mail_date_pretty = fields.Char(compute="_compute_last_mail_date_pretty")
 
     interlocutor_ids = fields.Many2many(
         comodel_name="webmail.contact", compute="_compute_interlocutor_ids"
@@ -66,18 +66,18 @@ class WebmailConversation(models.Model):
                 "mail_ids.author_contact_id"
             )
 
-    @api.depends("last_answer_date")
-    def _compute_display_date(self):
+    @api.depends("last_mail_date")
+    def _compute_last_mail_date_pretty(self):
         ctx_today = fields.Datetime.context_timestamp(
             self, fields.Datetime.from_string(datetime.datetime.today())
         )
         for conversation in self:
-            if not conversation.last_answer_date:
-                conversation.display_date = ""
+            if not conversation.last_mail_date:
+                conversation.last_mail_date_pretty = ""
                 continue
 
             ctx_date = fields.Datetime.context_timestamp(
-                self, fields.Datetime.from_string(conversation.last_answer_date)
+                self, fields.Datetime.from_string(conversation.last_mail_date)
             )
             # last answer has been done today, displaying 'HH:MM'
             if (
@@ -85,7 +85,7 @@ class WebmailConversation(models.Model):
                 and ctx_today.month == ctx_date.month
                 and ctx_today.year == ctx_date.year
             ):
-                conversation.display_date = ctx_date.strftime("%H:%M")
+                conversation.last_mail_date_pretty = ctx_date.strftime("%H:%M")
                 continue
 
             ctx_3m_date = fields.Datetime.context_timestamp(
@@ -96,11 +96,11 @@ class WebmailConversation(models.Model):
 
             # last answer has been done in the 3 last monthes, displaying "DD month"
             if ctx_3m_date < ctx_date:
-                conversation.display_date = ctx_date.strftime("%-d %B")
+                conversation.last_mail_date_pretty = ctx_date.strftime("%-d %B")
                 continue
 
             # last answer is old. displaying classic date
-            conversation.display_date = ctx_date.strftime("%d/%m/%Y")
+            conversation.last_mail_date_pretty = ctx_date.strftime("%d/%m/%Y")
 
     @api.depends("mail_ids.subject")
     def _compute_subject(self):
@@ -120,8 +120,8 @@ class WebmailConversation(models.Model):
     def _compute_dates(self):
         for conversation in self:
             dates = conversation.mapped("mail_ids.date")
-            conversation.date = dates and min(dates) or False
-            conversation.last_answer_date = dates and max(dates) or False
+            conversation.first_mail_date = dates and min(dates) or False
+            conversation.last_mail_date = dates and max(dates) or False
 
     @api.depends("mail_ids.conversation_id")
     def _compute_mail_qty(self):

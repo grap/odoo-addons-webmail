@@ -28,9 +28,9 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 </header>
                 <field name="interlocutor_ids" widget="many2many_avatar_user"/>
                 <field name="subject" />
-                <field name="date" optional="hide"/>
-                <field name="last_answer_date" optional="hide"/>
-                <field name="display_date" optional="show"/>
+                <field name="first_mail_date" optional="hide"/>
+                <field name="last_mail_date" optional="hide"/>
+                <field name="last_mail_date_pretty" optional="show"/>
                 <field name="mail_qty" />
                 <field name="pending_answer" invisible="1" />
                 <field name="unread" widget="boolean_toggle" optional="hide"/>
