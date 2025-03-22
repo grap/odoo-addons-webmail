@@ -26,6 +26,7 @@ class TestConversationThread(TransactionCase):
                 "identifier": identifier,
                 "reply_identifier": reply_identifier,
                 "folder_id": self.webmail_folder.id,
+                "from_text": "from@test.fr",
             }
         )
 
