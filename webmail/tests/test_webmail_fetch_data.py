@@ -57,10 +57,10 @@ class TestWebmailFetchData(TransactionCase):
             self.webmail_account.button_fetch_folders()
             folders = self.webmail_account.folder_ids
             self.assertEqual(len(folders), 5)
-            self.assertIn("Rangé", folders.mapped("technical_name"))
-            self.assertIn("Rangé/CIE", folders.mapped("technical_name"))
-            self.assertIn("Rangé/Coopaname", folders.mapped("technical_name"))
-            self.assertIn("²&é(-è_çà)=^$*ù,;:!<", folders.mapped("technical_name"))
+            self.assertIn("Rangé", folders.mapped("complete_name"))
+            self.assertIn("Rangé / CIE", folders.mapped("complete_name"))
+            self.assertIn("Rangé / Coopaname", folders.mapped("complete_name"))
+            self.assertIn('"²&é(-è_çà)=^$*ù,;:!<"', folders.mapped("complete_name"))
 
             self.assertIn("Rangé", folders.mapped("name"))
             self.assertIn("CIE", folders.mapped("name"))
