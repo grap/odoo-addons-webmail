@@ -23,6 +23,7 @@ class FakeIMAPClient:
 
     def list(self):
         return "OK", [
+            b'(\\HasChildren \\UnMarked) "/" Trash',
             b'(\\HasChildren \\UnMarked) "/" Rang&AOk-',
             b'(\\HasNoChildren \\UnMarked) "/" Rang&AOk-/CIE',
             b'(\\HasNoChildren \\UnMarked) "/" Rang&AOk-/Coopaname',
@@ -65,6 +66,7 @@ class TestWebmailFetchData(TransactionCase):
             self.assertIn("Rangé", folders.mapped("name"))
             self.assertIn("CIE", folders.mapped("name"))
             self.assertIn("Coopaname", folders.mapped("name"))
+            self.assertNotIn("Trash", folders.mapped("name"))
 
             cie_folder = self.webmail_account.folder_ids.filtered(
                 lambda x: x.name == "CIE"
