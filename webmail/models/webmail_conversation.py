@@ -34,8 +34,11 @@ class WebmailConversation(models.Model):
 
     last_mail_date_pretty = fields.Char(compute="_compute_last_mail_date_pretty")
 
-    interlocutor_ids = fields.Many2many(
-        comodel_name="webmail.contact", compute="_compute_interlocutor_ids"
+    author_ids = fields.Many2many(
+        string="Authors",
+        comodel_name="webmail.contact",
+        compute="_compute_author_ids",
+        # search='_search_author_ids'
     )
 
     content = fields.Html("Contents", compute="_compute_content")
@@ -60,11 +63,9 @@ class WebmailConversation(models.Model):
             conversation.content = "<hr/>".join(conversation.mapped("mail_ids.content"))
 
     @api.depends("mail_ids.author_contact_id")
-    def _compute_interlocutor_ids(self):
+    def _compute_author_ids(self):
         for conversation in self:
-            conversation.interlocutor_ids = conversation.mapped(
-                "mail_ids.author_contact_id"
-            )
+            conversation.author_ids = conversation.mapped("mail_ids.author_contact_id")
 
     @api.depends("last_mail_date")
     def _compute_last_mail_date_pretty(self):

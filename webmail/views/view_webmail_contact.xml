@@ -20,6 +20,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="model">webmail.contact</field>
         <field name="arch" type="xml">
             <list>
+                <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_128', 'size': [30, 30]}"/>
                 <field name="email" />
                 <field name="name" />
             </list>
