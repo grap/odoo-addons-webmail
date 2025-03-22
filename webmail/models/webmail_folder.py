@@ -2,6 +2,10 @@
 # @author: Sylvain LE GAL (https://twitter.com/legalsylvain)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import logging
+from datetime import date
+
+from dateutil.relativedelta import relativedelta
+from imap_tools import AND
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -9,6 +13,8 @@ from odoo.exceptions import UserError
 from .tools import decode_imap4_utf7
 
 _logger = logging.getLogger(__name__)
+
+_IGNORE_FOLDERS = ["Drafts", "Trash"]
 
 
 class WebmailFolder(models.Model):
@@ -51,6 +57,8 @@ class WebmailFolder(models.Model):
         compute="_compute_complete_name", recursive=True, store=True
     )
 
+    last_fetch_date = fields.Date(readonly=True)
+
     # Compute Section
     @api.depends("name", "parent_id.name")
     def _compute_complete_name(self):
@@ -81,8 +89,10 @@ class WebmailFolder(models.Model):
 
     # Private Section
     def _create_if_not_exists(self, webmail_account, folder_data):
-        complete_name = decode_imap4_utf7(folder_data.decode()).split(' "/" ')[-1]
         technical_name = folder_data.decode().split(' "/" ')[-1]
+        complete_name = decode_imap4_utf7(folder_data.decode()).split(' "/" ')[-1]
+        if complete_name in _IGNORE_FOLDERS:
+            return
         if technical_name.startswith('"') and technical_name.endswith('"'):
             technical_name = technical_name[1:-1]
         self._recursive_get_or_create(webmail_account, complete_name, technical_name)
@@ -125,7 +135,7 @@ class WebmailFolder(models.Model):
     def _fetch_mails(self):
         for webmail_folder in self:
             client = webmail_folder.webmail_account_id._get_client_connected()
-            _logger.info(f"Fetching Mails for folder {webmail_folder.technical_name}")
+            _logger.info(f"Fetching Mails for folder {webmail_folder.complete_name}")
             status, select_code = client.select(f'"{webmail_folder.technical_name}"')
             if status != "OK":
                 client.logout()
@@ -141,15 +151,24 @@ class WebmailFolder(models.Model):
                         }
                     )
                 )
-            status, search_result = client.search(None, "ALL")
+            if webmail_folder.last_fetch_date:
+                fetch_date = webmail_folder.last_fetch_date + relativedelta(days=-1)
+                domain = str(AND(date_gte=fetch_date))
+                _logger.info(f"Since {fetch_date} ...")
+            else:
+                domain = "ALL"
+                _logger.info("All Mails ...")
+            status, search_result = client.search(None, domain)
             num_list = search_result[0].split()
             for num in num_list:
                 _logger.info(
                     f" {num.decode()}/{len(num_list)}:"
-                    f" Get Mail in {webmail_folder.technical_name})."
+                    f" Get Mail in {webmail_folder.complete_name}."
                 )
                 status, mail_data = client.fetch(num, "(RFC822)")
                 self.env["webmail.mail"]._create_or_update_mail(
                     webmail_folder, mail_data[0][1]
                 )
             client.logout()
+            if webmail_folder.last_fetch_date != date.today():
+                webmail_folder.last_fetch_date = date.today()

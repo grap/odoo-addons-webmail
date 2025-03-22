@@ -28,9 +28,25 @@ class WebmailAccount(models.Model):
         readonly=True,
     )
 
+    cron_id = fields.Many2one(
+        string="Odoo Cron",
+        comodel_name="ir.cron",
+        readonly=True,
+        help="Cron Task that will fetch account mails",
+        ondelete="cascade",
+    )
+
     folder_qty = fields.Integer(compute="_compute_folder_qty", store=True)
 
     mail_qty = fields.Integer(compute="_compute_mail_qty", store=True)
+
+    # Overload Section
+    @api.model_create_multi
+    def create(self, vals_list):
+        accounts = super().create(vals_list)
+        for account in accounts:
+            account.cron_id = self.env["ir.cron"].create(account._prepare_cron())
+        return accounts
 
     # Compute Section
     @api.depends("folder_ids")
@@ -54,7 +70,7 @@ class WebmailAccount(models.Model):
         self._fetch_folders()
 
     def button_fetch_mails_by_batch(self):
-        for folder in self.mapped("folder_ids").filtered(lambda x: x.mail_qty == 0):
+        for folder in self.mapped("folder_ids"):
             folder._fetch_mails()
             self.env.cr.commit()  # pylint: disable=invalid-commit
 
@@ -110,3 +126,24 @@ class WebmailAccount(models.Model):
 
             for folder_data in folder_datas:
                 self.env["webmail.folder"]._create_if_not_exists(account, folder_data)
+
+    @api.model
+    def _fetch_mail_by_cron(self, account_ids):
+        accounts = self.browse(account_ids)
+        for account in accounts:
+            account._fetch_folders()
+            account.mapped("folder_ids")._fetch_mails()
+
+    def _prepare_cron(self):
+        self.ensure_one()
+        return {
+            "name": f"Fetch Mails for account #{self.id}",
+            "interval_type": "minutes",
+            "interval_number": 10,
+            "model_id": self.env["ir.model"]
+            .search([("model", "=", self._name)], limit=1)
+            .id,
+            "state": "code",
+            "code": f"model._fetch_mail_by_cron({self.ids})",
+            "active": False,
+        }
