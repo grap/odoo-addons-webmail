@@ -184,6 +184,9 @@ class WebmailMail(models.Model):
             f" {webmail_folder.technical_name}:"
             f" Creation of mail {identifier}."
         )
+        webmail_folder.webmail_account_id.user_id.notify_info(
+            title="New mail", message=f"<b>Subject</b>{message_dict.get('subject')}"
+        )
         mail = self.create(vals)
         if message_dict["attachments"]:
             res = self.env["mail.thread"]._process_attachments_for_post(
