@@ -47,15 +47,41 @@ class WebmailConversation(models.Model):
 
     answer = fields.Html()
 
-    unread = fields.Boolean()
+    has_been_read = fields.Boolean(
+        compute="_compute_has_been_read", store=True, inverse="_inverse_has_been_read"
+    )
 
     answer_contact_ids = fields.Many2many(comodel_name="webmail.contact")
+
+    read_me = fields.Boolean(
+        prefetch=False,
+        compute="_compute_read_me",
+        help="Technical field, use to mark the conversation as read.",
+    )
 
     def button_write_answer(self):
         self.write({"pending_answer": True})
 
     def button_drop_answer(self):
         self.write({"pending_answer": False, "answer": False})
+
+    def _inverse_has_been_read(self):
+        for conversation in self:
+            conversation.mapped("mail_ids").write(
+                {"has_been_read": conversation.has_been_read}
+            )
+
+    def _compute_read_me(self):
+        for conversation in self:
+            conversation.read_me = True
+            conversation.has_been_read = True
+
+    @api.depends("mail_ids.has_been_read")
+    def _compute_has_been_read(self):
+        for conversation in self:
+            conversation.has_been_read = all(
+                conversation.mapped("mail_ids.has_been_read")
+            )
 
     @api.depends("mail_ids.content")
     def _compute_content(self):

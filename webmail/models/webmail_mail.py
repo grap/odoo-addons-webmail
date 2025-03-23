@@ -76,6 +76,8 @@ class WebmailMail(models.Model):
 
     content = fields.Html(compute="_compute_content")
 
+    has_been_read = fields.Boolean()
+
     @api.depends("body")
     def _compute_content(self):
         for mail in self:
