@@ -8,7 +8,7 @@
     <record id="demo_webmail_folder" model="webmail.folder">
         <field name="name">INBOX</field>
         <field name="technical_name">INBOX</field>
-        <field name="webmail_account_id" ref="webmail.demo_webmail_account" />
+        <field name="account_id" ref="webmail.demo_webmail_account" />
     </record>
 
 </odoo>

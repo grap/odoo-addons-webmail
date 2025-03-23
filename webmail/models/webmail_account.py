@@ -24,7 +24,7 @@ class WebmailAccount(models.Model):
 
     folder_ids = fields.One2many(
         comodel_name="webmail.folder",
-        inverse_name="webmail_account_id",
+        inverse_name="account_id",
         readonly=True,
     )
 

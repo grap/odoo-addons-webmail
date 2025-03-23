@@ -4,12 +4,13 @@
 
 import datetime
 import logging
-import re
 
 from dateutil.relativedelta import relativedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+
+from .tools import clean_subject
 
 _logger = logging.getLogger(__name__)
 
@@ -20,13 +21,20 @@ class WebmailConversation(models.Model):
     _rec_name = "subject"
     _order = "last_mail_date desc, subject"
 
-    subject = fields.Char(compute="_compute_subject", store=True)
+    account_id = fields.Many2one(
+        comodel_name="webmail.account",
+        ondelete="cascade",
+        required=True,
+        readonly=True,
+    )
 
     mail_ids = fields.One2many(
         comodel_name="webmail.mail", inverse_name="conversation_id", readonly=True
     )
 
     mail_qty = fields.Integer(compute="_compute_mail_qty", store=True)
+
+    subject = fields.Char(compute="_compute_subject", store=True)
 
     first_mail_date = fields.Datetime(compute="_compute_dates", store=True)
 
@@ -59,19 +67,15 @@ class WebmailConversation(models.Model):
         help="Technical field, use to mark the conversation as read.",
     )
 
-    def button_write_answer(self):
-        self.write({"pending_answer": True})
-
-    def button_drop_answer(self):
-        self.write({"pending_answer": False, "answer": False})
-
-    def _inverse_has_been_read(self):
-        for conversation in self:
-            conversation.mapped("mail_ids").write(
-                {"has_been_read": conversation.has_been_read}
-            )
-
+    # ###########################
+    # Compute & Inverse Section
+    # ###########################
     def _compute_read_me(self):
+        # Fake compute section
+        # the field read me is computed only when conversation
+        # form view is displayed.
+        # we so "auto-mark-as-read" the conversation once it has been
+        # opened
         for conversation in self:
             conversation.read_me = True
             conversation.has_been_read = True
@@ -82,6 +86,24 @@ class WebmailConversation(models.Model):
             conversation.has_been_read = all(
                 conversation.mapped("mail_ids.has_been_read")
             )
+
+    def _inverse_has_been_read(self):
+        for conversation in self:
+            conversation.mapped("mail_ids").write(
+                {"has_been_read": conversation.has_been_read}
+            )
+
+    @api.depends("mail_ids.date")
+    def _compute_dates(self):
+        for conversation in self:
+            dates = conversation.mapped("mail_ids.date")
+            conversation.first_mail_date = dates and min(dates) or False
+            conversation.last_mail_date = dates and max(dates) or False
+
+    @api.depends("mail_ids.conversation_id")
+    def _compute_mail_qty(self):
+        for conversation in self:
+            conversation.mail_qty = len(conversation.mail_ids)
 
     @api.depends("mail_ids.content")
     def _compute_content(self):
@@ -137,23 +159,30 @@ class WebmailConversation(models.Model):
             if not subjects:
                 conversation.subject = _("No Subject")
             else:
-                conversation.subject = self._clean_subject(subjects[0])
+                conversation.subject = clean_subject(subjects[0])
 
-    @api.model
-    def _clean_subject(self, subject):
-        return re.sub(r"(((RE)|(Re)|(Fwd)|(TR)): )+", "", subject)
+    # ###########################
+    # Button and Action section
+    # ###########################
 
-    @api.depends("mail_ids.date")
-    def _compute_dates(self):
+    def button_mark_as_read(self):
+        self.write({"has_been_read": True})
+
+    def button_mark_as_unread(self):
+        self.write({"has_been_unread": False})
+
+    def button_merge(self):
+        self._merge()
+
+    def button_write_answer(self):
+        self.write({"pending_answer": True})
+
+    def button_drop_answer(self):
+        self.write({"pending_answer": False, "answer": False})
+
+    def button_send_answer(self):
         for conversation in self:
-            dates = conversation.mapped("mail_ids.date")
-            conversation.first_mail_date = dates and min(dates) or False
-            conversation.last_mail_date = dates and max(dates) or False
-
-    @api.depends("mail_ids.conversation_id")
-    def _compute_mail_qty(self):
-        for conversation in self:
-            conversation.mail_qty = len(conversation.mail_ids)
+            conversation._send_answer()
 
     def action_view_mails(self):
         mails = self.mapped("mail_ids")
@@ -163,9 +192,9 @@ class WebmailConversation(models.Model):
         action["domain"] = [("id", "in", mails.ids)]
         return action
 
-    def button_merge(self):
-        self._merge()
-
+    # ###########################
+    # Private section
+    # ###########################
     def _merge(self):
         if len(self) <= 1:
             raise UserError(_("Merge conversation requires many conversation"))
@@ -178,3 +207,6 @@ class WebmailConversation(models.Model):
         other_conversations.mail_ids.conversation_id = first_conversation
         other_conversations.unlink()
         return first_conversation
+
+    def _send_answer(self):
+        self.ensure_one()

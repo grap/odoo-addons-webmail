@@ -26,6 +26,14 @@ class WebmailMail(models.Model):
         readonly=True,
     )
 
+    account_id = fields.Many2one(
+        comodel_name="webmail.account",
+        related="folder_id.account_id",
+        ondelete="cascade",
+        readonly=True,
+        store=True,
+    )
+
     conversation_id = fields.Many2one(
         compute="_compute_conversation_id",
         comodel_name="webmail.conversation",
@@ -78,6 +86,9 @@ class WebmailMail(models.Model):
 
     has_been_read = fields.Boolean()
 
+    # #######################
+    # Compute Section
+    # #######################
     @api.depends("body")
     def _compute_content(self):
         for mail in self:
@@ -105,7 +116,6 @@ class WebmailMail(models.Model):
                     [("reply_identifier", "=", mail.identifier)],
                 ]
             )
-
             if mail.reply_identifier:
                 domain = expression.OR(
                     [
@@ -114,6 +124,8 @@ class WebmailMail(models.Model):
                     ]
                 )
 
+            domain = expression.AND([domain, [("account_id", "=", mail.account_id.id)]])
+
             other_mails = self.search(domain)
             existing_conversations = other_mails.mapped("conversation_id")
             if len(existing_conversations) == 0:
@@ -121,7 +133,11 @@ class WebmailMail(models.Model):
                 _logger.info(
                     f"[ANALYZE] subject: {mail.subject}. Creating new conversation."
                 )
-                mail.conversation_id = self.env["webmail.conversation"].create({}).id
+                mail.conversation_id = (
+                    self.env["webmail.conversation"]
+                    .create({mail._prepare_conversation()})
+                    .id
+                )
 
             elif len(existing_conversations) == 1:
                 _logger.info(
@@ -134,7 +150,9 @@ class WebmailMail(models.Model):
                 )
                 mail.conversation_id = existing_conversations._merge().id
 
+    # #######################
     # Overload Section
+    # #######################
     @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
@@ -144,6 +162,9 @@ class WebmailMail(models.Model):
                 other_mails.write({"origin_mail_id": mail.id})
         return records
 
+    # #######################
+    # Private Section
+    # #######################
     def _create_or_update_mail(self, webmail_folder, mail_data):
         email_message = email.message_from_bytes(mail_data, policy=email.policy.default)
         data = email_message.as_string()
@@ -180,11 +201,11 @@ class WebmailMail(models.Model):
         }
 
         _logger.debug(
-            f"[FETCH] {webmail_folder.webmail_account_id.login} /"
+            f"[FETCH] {webmail_folder.account_id.login} /"
             f" {webmail_folder.technical_name}:"
             f" Creation of mail {identifier}."
         )
-        webmail_folder.webmail_account_id.user_id.notify_info(
+        webmail_folder.account_id.user_id.notify_info(
             title="New mail", message=f"<b>Subject</b>{message_dict.get('subject')}"
         )
         mail = self.create(vals)
@@ -208,3 +229,9 @@ class WebmailMail(models.Model):
         if not identifier:
             identifier = hashlib.sha256(message_bytes).hexdigest()
         return identifier
+
+    def _prepare_conversation(self):
+        self.ensure_one()
+        return {
+            "account_id": self.account_id.id,
+        }

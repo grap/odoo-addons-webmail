@@ -11,7 +11,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <search>
                 <field name="complete_name" />
-                <field name="webmail_account_id" />
+                <field name="account_id" />
             </search>
         </field>
     </record>
@@ -28,7 +28,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 </header>
                 <field name="complete_name" />
                 <field name="parent_id" optional="hide"/>
-                <field name="webmail_account_id" optional="show"/>
+                <field name="account_id" optional="show"/>
                 <field name="mail_qty" />
                 <field name="last_fetch_date" />
                     <button
@@ -68,7 +68,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                             <field name="name" />
                             <field name="parent_id" />
                             <field name="technical_name" />
-                            <field name="webmail_account_id" />
+                            <field name="account_id" />
                         </group>
                         <group />
                     </group>

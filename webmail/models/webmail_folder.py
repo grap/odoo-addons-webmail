@@ -30,7 +30,7 @@ class WebmailFolder(models.Model):
         readonly=True,
     )
 
-    webmail_account_id = fields.Many2one(
+    account_id = fields.Many2one(
         comodel_name="webmail.account",
         ondelete="cascade",
         required=True,
@@ -39,7 +39,7 @@ class WebmailFolder(models.Model):
 
     user_id = fields.Many2one(
         comodel_name="res.users",
-        related="webmail_account_id.user_id",
+        related="account_id.user_id",
         store=True,
         readonly=True,
     )
@@ -102,7 +102,7 @@ class WebmailFolder(models.Model):
         # Check if folder exist in Odoo
         existing_folder = self.search(
             [
-                ("webmail_account_id", "=", webmail_account.id),
+                ("account_id", "=", webmail_account.id),
                 ("technical_name", "=", technical_name),
             ]
         )
@@ -112,7 +112,7 @@ class WebmailFolder(models.Model):
         technical_name_parts = technical_name.split(separator)
         complete_name_parts = complete_name.split(separator)
         vals = {
-            "webmail_account_id": webmail_account.id,
+            "account_id": webmail_account.id,
             "technical_name": technical_name,
             "name": complete_name_parts[-1],
         }
@@ -134,7 +134,7 @@ class WebmailFolder(models.Model):
 
     def _fetch_mails(self):
         for webmail_folder in self:
-            client = webmail_folder.webmail_account_id._get_client_connected()
+            client = webmail_folder.account_id._get_client_connected()
             _logger.info(f"Fetching Mails for folder {webmail_folder.complete_name}")
             status, select_code = client.select(f'"{webmail_folder.technical_name}"')
             if status != "OK":
@@ -147,7 +147,7 @@ class WebmailFolder(models.Model):
                     % (
                         {
                             "folder_name": webmail_folder.technical_name,
-                            "account_login": webmail_folder.webmail_account_id.login,
+                            "account_login": webmail_folder.account_id.login,
                         }
                     )
                 )
