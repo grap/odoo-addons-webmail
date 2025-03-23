@@ -1,13 +1,14 @@
 # Copyright (C) 2025 - Today: OaaFS
 # @author: Sylvain LE GAL (https://twitter.com/legalsylvain)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-
 import datetime
+import imaplib
 import logging
+from time import time
 
 from dateutil.relativedelta import relativedelta
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
 
 from .tools import clean_subject
@@ -178,11 +179,19 @@ class WebmailConversation(models.Model):
         self.write({"pending_answer": True})
 
     def button_drop_answer(self):
-        self.write({"pending_answer": False, "answer": False})
+        self.write(
+            {
+                "pending_answer": False,
+                "answer": False,
+                "answer_contact_ids": [Command.clear()],
+            }
+        )
 
     def button_send_answer(self):
         for conversation in self:
             conversation._send_answer()
+            # TODO, Add here the mail that has been sent
+            conversation.button_drop_answer()
 
     def action_view_mails(self):
         mails = self.mapped("mail_ids")
@@ -210,3 +219,31 @@ class WebmailConversation(models.Model):
 
     def _send_answer(self):
         self.ensure_one()
+        IrMailServer = self.env["ir.mail_server"]
+        msg = IrMailServer.build_email(
+            email_from=self.account_id.login,
+            email_to=self.answer_contact_ids[0].email,
+            subject=self.subject,
+            body=self.answer,
+            # email_cc=email['email_cc'],
+            # reply_to=email['reply_to'],
+            # attachments=email['attachments'],
+            # message_id=email['message_id'],
+            # references=email['references'],
+            # object_id=email['object_id'],
+            subtype="html",
+        )
+        IrMailServer.send_email(
+            msg,
+            smtp_server=self.account_id.url,
+            smtp_port=465,
+            smtp_user=self.account_id.login,
+            smtp_password=self.account_id.password,
+            smtp_encryption="ssl",
+        )
+
+        connection = imaplib.IMAP4_SSL(self.account_id.url)
+        connection.login(self.account_id.login, self.account_id.password)
+        connection.append(
+            "Sent", "", imaplib.Time2Internaldate(time()), str(msg).encode("utf-8")
+        )

@@ -135,7 +135,7 @@ class WebmailMail(models.Model):
                 )
                 mail.conversation_id = (
                     self.env["webmail.conversation"]
-                    .create({mail._prepare_conversation()})
+                    .create(mail._prepare_conversation())
                     .id
                 )
 

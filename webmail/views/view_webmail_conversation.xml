@@ -57,7 +57,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <header>
                     <button name="button_write_answer" data-hotkey="a" string="Write Answer (A)" class="btn-primary" type="object" invisible="pending_answer == True"/>
                     <button name="button_drop_answer" data-hotkey="d" string="Drop Answer (D)" class="btn-warning" type="object" invisible="pending_answer == False" confirm="Are you sure to delete your draft answer"/>
-                    <button name="button_send_answer" data-hotkey="d" string="Send Answer (S)" class="btn-primary" type="object" invisible="pending_answer == False"/>
+                    <button name="button_send_answer" data-hotkey="s" string="Send Answer (S)" class="btn-primary" type="object" invisible="pending_answer == False"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
