@@ -22,10 +22,12 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <list>
                 <header>
-                    <button name="button_erase"
+                    <button name="unlink"
                         type="object"
-                        string="Erase"
-                        class="btn-warning"/>
+                        string="Erase (E)"
+                        class="btn-warning"
+                        context="{'erase_mail': True}"
+                        />
                 </header>
                 <field name="identifier" optional="hide" />
                 <field name="reply_identifier" optional="hide" />

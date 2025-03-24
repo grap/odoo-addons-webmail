@@ -144,13 +144,6 @@ class WebmailMail(models.Model):
                 )
                 mail.conversation_id = existing_conversations._merge().id
 
-    # ###########################
-    # Button and Action section
-    # ###########################
-    def button_erase(self):
-        self._erase()
-        self.unlink()
-
     # #######################
     # Overload Section
     # #######################
@@ -162,6 +155,11 @@ class WebmailMail(models.Model):
             if other_mails:
                 other_mails.write({"origin_mail_id": mail.id})
         return records
+
+    @api.ondelete(at_uninstall=False)
+    def _on_delete(self):
+        if self.env.context.get("erase_mail"):
+            self._erase_mail()
 
     # #######################
     # Private Section
@@ -237,7 +235,7 @@ class WebmailMail(models.Model):
             "account_id": self.account_id.id,
         }
 
-    def _erase(self):
+    def _erase_mail(self):
         if len(self.mapped("account_id")) > 1:
             raise UserError(
                 _("Unable to erase mail in many imap accounts in the same time.")

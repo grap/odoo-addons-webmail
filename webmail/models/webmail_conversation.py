@@ -35,6 +35,8 @@ class WebmailConversation(models.Model):
 
     mail_qty = fields.Integer(compute="_compute_mail_qty", store=True)
 
+    tag_ids = fields.Many2many(comodel_name="webmail.tag")
+
     subject = fields.Char(compute="_compute_subject", store=True)
 
     first_mail_date = fields.Datetime(compute="_compute_dates", store=True)
@@ -71,6 +73,14 @@ class WebmailConversation(models.Model):
         compute="_compute_read_me",
         help="Technical field, use to mark the conversation as read.",
     )
+
+    # ###########################
+    # Overload Section
+    # ###########################
+    @api.ondelete(at_uninstall=False)
+    def _on_delete(self):
+        if self.env.context.get("erase_mail"):
+            self.mapped("mail_ids").unlink()
 
     # ###########################
     # Compute & Inverse Section
@@ -195,10 +205,6 @@ class WebmailConversation(models.Model):
             conversation._send_answer()
             # TODO, Add here the mail that has been sent
             conversation.button_drop_answer()
-
-    def button_erase(self):
-        self.mapped("mail_ids").button_erase()
-        self.unlink()
 
     def action_view_mails(self):
         mails = self.mapped("mail_ids")

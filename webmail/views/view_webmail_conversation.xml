@@ -12,8 +12,9 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
             <search>
                 <field name="subject" />
                 <field name="author_ids" />
+                <field name="tag_ids" />
                 <filter string="Authors" name="group_by_author_ids" context="{'group_by': 'author_ids'}"/>
-
+                <filter string="Subjects" name="group_by_subject" context="{'group_by': 'subject'}"/>
             </search>
         </field>
     </record>
@@ -22,6 +23,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="model">webmail.conversation</field>
         <field name="arch" type="xml">
             <list decoration-bf="has_been_read == False"
+                multi_edit="1"
                 decoration-info="pending_answer == True"
                 decoration-it="pending_answer == True">
                 <header>
@@ -38,11 +40,12 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         type="object"
                         string="Unread"
                         class="btn-secondary"/>
-                    <button name="button_erase"
+                    <button name="unlink"
                         type="object"
                         string="Erase (E)"
                         class="btn-warning"
                         data-hotkey="e"
+                        context="{'erase_mail': True}"
                         confirm="Are you sure you want to drop the mail(s) on the server ?"/>
 
                 </header>
@@ -51,6 +54,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="mail_qty" string="" invisible="mail_qty == 1"/>
                 <field name="subject"/>
                 <field name="last_mail_date_pretty" string="Date"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
                 <field name="first_mail_date" optional="hide"/>
                 <field name="last_mail_date" optional="hide"/>
                 <field name="has_been_read" optional="hide" widget="boolean_toggle" string="Read"/>
@@ -66,7 +70,9 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <button name="button_write_answer" data-hotkey="a" string="Write Answer (A)" class="btn-primary" type="object" invisible="pending_answer == True"/>
                     <button name="button_drop_answer" data-hotkey="d" string="Drop Answer (D)" class="btn-warning" type="object" invisible="pending_answer == False" confirm="Are you sure to delete your draft answer"/>
                     <button name="button_send_answer" data-hotkey="s" string="Send Answer (S)" class="btn-primary" type="object" invisible="pending_answer == False"/>
-                    <button name="button_erase" data-hotkey="e" string="Erase (E)" class="btn-warning" type="object" confirm="Are you sure you want to drop the mail(s) on the server ?"/>
+                    <button name="unlink" data-hotkey="e" string="Erase (E)" class="btn-warning" type="object"
+                        context="{'erase_mail': True}"
+                        confirm="Are you sure you want to drop the mail(s) on the server ?"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -81,6 +87,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         </button>
                     </div>
 
+                    <field name="tag_ids"/>
                     <field name="read_me" invisible="1"/>
                     <group invisible="pending_answer == False">
                         <field name="pending_answer" invisible="1"/>
