@@ -47,7 +47,8 @@ class WebmailConversation(models.Model):
         string="Authors",
         comodel_name="webmail.contact",
         compute="_compute_author_ids",
-        # search='_search_author_ids'
+        relation="webmail_conversation_contact_author_rel",
+        store=True,
     )
 
     content = fields.Html("Contents", compute="_compute_content")
@@ -60,7 +61,10 @@ class WebmailConversation(models.Model):
         compute="_compute_has_been_read", store=True, inverse="_inverse_has_been_read"
     )
 
-    answer_contact_ids = fields.Many2many(comodel_name="webmail.contact")
+    answer_contact_ids = fields.Many2many(
+        comodel_name="webmail.contact",
+        relation="webmail_conversation_contact_answer_rel",
+    )
 
     read_me = fields.Boolean(
         prefetch=False,
