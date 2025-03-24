@@ -3,19 +3,39 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 import re
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 
 class WebmailContact(models.Model):
     _name = "webmail.contact"
     _inherit = ["avatar.mixin"]
+    _order = "name"
 
     _description = "Webmail Contacts"
 
     name = fields.Char()
 
     email = fields.Char(required=True)
+
+    author_mail_ids = fields.One2many(
+        comodel_name="webmail.mail", inverse_name="author_contact_id"
+    )
+
+    author_mail_qty = fields.Integer(compute="_compute_author_mail_qty", store=True)
+
+    @api.depends("author_mail_ids.author_contact_id")
+    def _compute_author_mail_qty(self):
+        for contact in self:
+            contact.author_mail_qty = len(contact.author_mail_ids)
+
+    def action_view_mails(self):
+        mails = self.mapped("author_mail_ids")
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "webmail.action_webmail_mail"
+        )
+        action["domain"] = [("id", "in", mails.ids)]
+        return action
 
     def _get_or_create(self, text, multi=False):
         if multi:

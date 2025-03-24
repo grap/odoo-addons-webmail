@@ -19,10 +19,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
     <record id="view_webmail_contact_list" model="ir.ui.view">
         <field name="model">webmail.contact</field>
         <field name="arch" type="xml">
-            <list>
+            <list editable="bottom">
                 <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_128', 'size': [30, 30]}"/>
-                <field name="email" />
                 <field name="name" />
+                <field name="email" />
+                <field name="author_mail_qty" />
             </list>
         </field>
     </record>
@@ -33,7 +34,18 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
             <form>
                 <header />
                 <sheet>
-                    <div class="oe_button_box" name="button_box" />
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_mails"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-envelope-o"
+                            invisible="author_mail_qty == 0"
+                        >
+                            <field name="author_mail_qty" widget="statinfo" string="Mails" />
+                        </button>
+                    </div>
+
                     <field name="image_1920" widget='image' class="oe_avatar" options='{"zoom": true, "preview_image": "avatar_128"}'/>
                     <div class="oe_title">
                         <label for="name"/>
@@ -41,7 +53,6 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         <label for="email"/>
                         <h2><field name="email"/></h2>
                     </div>
-
                 </sheet>
             </form>
         </field>
