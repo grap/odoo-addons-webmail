@@ -23,18 +23,6 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="login" />
                 <field name="url" />
                 <field name="port" />
-                <field name="folder_qty" />
-                <button
-                    string="Fetch Folders"
-                    type="object"
-                    name="button_fetch_folders"
-                />
-                <field name="mail_qty" />
-                <button
-                    string="Fetch Mails (by Batch)"
-                    type="object"
-                    name="button_fetch_mails_by_batch"
-                />
             </list>
         </field>
     </record>
@@ -90,7 +78,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                             <field name="url" />
                             <field name="port" />
                             <field name="login" />
-                            <field name="password" />
+                            <field name="password" password="True" />
                             <field name="user_id" />
                             <field name="cron_id" />
                         </group>
