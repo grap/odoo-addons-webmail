@@ -36,16 +36,22 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         type="object"
                         string="Unread"
                         class="btn-secondary"/>
-
+                    <button name="button_erase"
+                        type="object"
+                        string="Erase (E)"
+                        class="btn-warning"
+                        data-hotkey="e"
+                        confirm="Are you sure you want to drop the mail(s) on the server ?"/>
 
                 </header>
+
                 <field name="author_ids" widget="many2many_avatar_user"/>
-                <field name="subject" />
+                <field name="mail_qty" string="" invisible="mail_qty == 1"/>
+                <field name="subject"/>
+                <field name="last_mail_date_pretty" string="Date"/>
                 <field name="first_mail_date" optional="hide"/>
                 <field name="last_mail_date" optional="hide"/>
-                <field name="last_mail_date_pretty"/>
-                <field name="mail_qty" />
-                <field name="has_been_read" widget="boolean_toggle" optional="hide" string="Read"/>
+                <field name="has_been_read" optional="hide" widget="boolean_toggle" string="Read"/>
             </list>
         </field>
     </record>
@@ -58,6 +64,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <button name="button_write_answer" data-hotkey="a" string="Write Answer (A)" class="btn-primary" type="object" invisible="pending_answer == True"/>
                     <button name="button_drop_answer" data-hotkey="d" string="Drop Answer (D)" class="btn-warning" type="object" invisible="pending_answer == False" confirm="Are you sure to delete your draft answer"/>
                     <button name="button_send_answer" data-hotkey="s" string="Send Answer (S)" class="btn-primary" type="object" invisible="pending_answer == False"/>
+                    <button name="button_erase" data-hotkey="e" string="Erase (E)" class="btn-warning" type="object" confirm="Are you sure you want to drop the mail(s) on the server ?"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -82,7 +89,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         <kanban class="o_kanban_mobile">
                             <field name="author_contact_id"/>
                             <field name="date"/>
-                            <field name="content"/>
+                            <field name="body"/>
                             <templates>
                                 <t t-name="card" class="flex-row kanban_mail_full_screen">
                                     <main class="w-100 ps-2 pt-1">
@@ -93,7 +100,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                                         </div>
                                         <hr/>
                                         <div>
-                                            <field name="content" widget="html_mail" class="hide_reply_and_author"/>
+                                            <field name="body" widget="html_mail" class="hide_reply_and_author"/>
                                         </div>
                                     </main>
                                 </t>

@@ -106,10 +106,10 @@ class WebmailConversation(models.Model):
         for conversation in self:
             conversation.mail_qty = len(conversation.mail_ids)
 
-    @api.depends("mail_ids.content")
+    @api.depends("mail_ids.body")
     def _compute_content(self):
         for conversation in self:
-            conversation.content = "<hr/>".join(conversation.mapped("mail_ids.content"))
+            conversation.content = "<hr/>".join(conversation.mapped("mail_ids.body"))
 
     @api.depends("mail_ids.author_contact_id")
     def _compute_author_ids(self):
@@ -165,7 +165,6 @@ class WebmailConversation(models.Model):
     # ###########################
     # Button and Action section
     # ###########################
-
     def button_mark_as_read(self):
         self.write({"has_been_read": True})
 
@@ -192,6 +191,10 @@ class WebmailConversation(models.Model):
             conversation._send_answer()
             # TODO, Add here the mail that has been sent
             conversation.button_drop_answer()
+
+    def button_erase(self):
+        self.mapped("mail_ids").button_erase()
+        self.unlink()
 
     def action_view_mails(self):
         mails = self.mapped("mail_ids")
@@ -234,6 +237,7 @@ class WebmailConversation(models.Model):
             subtype="html",
         )
         msg["In-Reply-To"] = self.mail_ids[-1].identifier
+        # Send the email
         IrMailServer.send_email(
             msg,
             smtp_server=self.account_id.url,
@@ -242,9 +246,9 @@ class WebmailConversation(models.Model):
             smtp_password=self.account_id.password,
             smtp_encryption="ssl",
         )
-
-        connection = imaplib.IMAP4_SSL(self.account_id.url)
-        connection.login(self.account_id.login, self.account_id.password)
-        connection.append(
+        # Store the email in the 'Sent' folder
+        client = self.account_id._get_imap_client_connected()
+        client.append(
             "Sent", "", imaplib.Time2Internaldate(time()), str(msg).encode("utf-8")
         )
+        client.logout()

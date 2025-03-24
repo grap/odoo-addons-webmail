@@ -5,7 +5,8 @@ import email
 import hashlib
 import logging
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 from odoo.osv import expression
 from odoo.tools.mail import decode_message_header, email_split_and_format
 
@@ -82,18 +83,11 @@ class WebmailMail(models.Model):
 
     body = fields.Html(readonly=True, sanitize_style=True)
 
-    content = fields.Html(compute="_compute_content")
-
     has_been_read = fields.Boolean()
 
     # #######################
     # Compute Section
     # #######################
-    @api.depends("body")
-    def _compute_content(self):
-        for mail in self:
-            mail.content = mail.body
-
     @api.depends("from_text", "original_from_text")
     def _compute_author_contact_id(self):
         for mail in self:
@@ -149,6 +143,13 @@ class WebmailMail(models.Model):
                     f"[ANALYZE] subject: {mail.subject}. Found many conversations."
                 )
                 mail.conversation_id = existing_conversations._merge().id
+
+    # ###########################
+    # Button and Action section
+    # ###########################
+    def button_erase(self):
+        self._erase()
+        self.unlink()
 
     # #######################
     # Overload Section
@@ -235,3 +236,27 @@ class WebmailMail(models.Model):
         return {
             "account_id": self.account_id.id,
         }
+
+    def _erase(self):
+        if len(self.mapped("account_id")) > 1:
+            raise UserError(
+                _("Unable to erase mail in many imap accounts in the same time.")
+            )
+        client = self.mapped("account_id")[0]._get_imap_client_connected()
+        for mail in self:
+            client.select(mail.folder_id.technical_name)
+            res = client.search(None, f'(HEADER Message-ID "{mail.identifier}")')
+            if not res[0] == "OK" or len(res[1]) != 1 or res[1][0] == b"":
+                mail.account_id.user_id.notify_danger(
+                    _(
+                        f"Mail {mail.subject}. ({mail.identifier}"
+                        f" not found in the folder {mail.folder_id.complete_name})"
+                    ),
+                    sticky=True,
+                )
+                continue
+
+            client.store(res[1][0], "+FLAGS", "\\Deleted")
+        client.expunge()
+        client.close()
+        client.logout()

@@ -4,8 +4,8 @@
 import logging
 from datetime import date
 
+import imap_tools
 from dateutil.relativedelta import relativedelta
-from imap_tools import AND
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -134,7 +134,7 @@ class WebmailFolder(models.Model):
 
     def _fetch_mails(self):
         for webmail_folder in self:
-            client = webmail_folder.account_id._get_client_connected()
+            client = webmail_folder.account_id._get_imap_client_connected()
             _logger.info(f"Fetching Mails for folder {webmail_folder.complete_name}")
             status, select_code = client.select(f'"{webmail_folder.technical_name}"')
             if status != "OK":
@@ -153,7 +153,7 @@ class WebmailFolder(models.Model):
                 )
             if webmail_folder.last_fetch_date:
                 fetch_date = webmail_folder.last_fetch_date + relativedelta(days=-1)
-                domain = str(AND(date_gte=fetch_date))
+                domain = str(imap_tools.AND(date_gte=fetch_date))
                 _logger.info(f"Since {fetch_date} ...")
             else:
                 domain = "ALL"

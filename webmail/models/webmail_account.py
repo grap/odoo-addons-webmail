@@ -64,7 +64,7 @@ class WebmailAccount(models.Model):
     # Action Section
     def button_test_connexion(self):
         self.ensure_one()
-        client = self._get_client_connected()
+        client = self._get_imap_client_connected()
         client.close()
         client.logout()
 
@@ -93,7 +93,7 @@ class WebmailAccount(models.Model):
         return action
 
     # Private Section
-    def _get_client_connected(self):
+    def _get_imap_client_connected(self):
         self.ensure_one()
         try:
             client = imaplib.IMAP4_SSL(self.url)
@@ -122,7 +122,7 @@ class WebmailAccount(models.Model):
 
     def _fetch_folders(self):
         for account in self:
-            client = account._get_client_connected()
+            client = account._get_imap_client_connected()
             status, folder_datas = client.list()
             client.logout()
 
