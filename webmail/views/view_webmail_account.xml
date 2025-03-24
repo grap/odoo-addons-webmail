@@ -22,6 +22,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
             <list>
                 <field name="login" />
                 <field name="url" />
+                <field name="port" />
                 <field name="folder_qty" />
                 <button
                     string="Fetch Folders"
@@ -87,6 +88,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <group>
                         <group>
                             <field name="url" />
+                            <field name="port" />
                             <field name="login" />
                             <field name="password" />
                             <field name="user_id" />

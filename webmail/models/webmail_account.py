@@ -16,6 +16,8 @@ class WebmailAccount(models.Model):
 
     url = fields.Char(required=True)
 
+    port = fields.Integer(required=True)
+
     login = fields.Char(required=True)
 
     user_id = fields.Many2one(comodel_name="res.users", required=True)

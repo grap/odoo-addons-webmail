@@ -75,8 +75,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <field name="read_me" invisible="1"/>
                     <group invisible="pending_answer == False">
                         <field name="pending_answer" invisible="1"/>
-                        <field name="answer" style="border: 1px solid" nolabel="1"/>
                         <field name="answer_contact_ids" widget="many2many_avatar_user"/>
+                        <field name="answer" style="border: 1px solid" nolabel="1"/>
                     </group>
                     <field name="mail_ids">
                         <kanban class="o_kanban_mobile">

@@ -233,10 +233,11 @@ class WebmailConversation(models.Model):
             # object_id=email['object_id'],
             subtype="html",
         )
+        msg["In-Reply-To"] = self.mail_ids[-1].identifier
         IrMailServer.send_email(
             msg,
             smtp_server=self.account_id.url,
-            smtp_port=465,
+            smtp_port=self.account_id.port,
             smtp_user=self.account_id.login,
             smtp_password=self.account_id.password,
             smtp_encryption="ssl",
