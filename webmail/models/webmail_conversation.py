@@ -35,7 +35,7 @@ class WebmailConversation(models.Model):
 
     mail_qty = fields.Integer(compute="_compute_mail_qty", store=True)
 
-    tag_ids = fields.Many2many(comodel_name="webmail.tag")
+    tag_ids = fields.Many2many(string="Tags", comodel_name="webmail.tag")
 
     active = fields.Boolean(default=True)
 
