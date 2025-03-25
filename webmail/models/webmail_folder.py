@@ -1,6 +1,7 @@
 # Copyright (C) 2023 - Today: OaaFS
 # @author: Sylvain LE GAL (https://twitter.com/legalsylvain)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+import email
 import logging
 from datetime import date
 
@@ -166,8 +167,11 @@ class WebmailFolder(models.Model):
                     f" Get Mail in {webmail_folder.complete_name}."
                 )
                 status, mail_data = client.fetch(num, "(RFC822)")
+                email_message = email.message_from_bytes(
+                    mail_data[0][1], policy=email.policy.default
+                )
                 self.env["webmail.mail"]._create_or_update_mail(
-                    webmail_folder, mail_data[0][1]
+                    webmail_folder, email_message
                 )
             client.logout()
             if webmail_folder.last_fetch_date != date.today():

@@ -24,10 +24,28 @@ class WebmailContact(models.Model):
 
     author_mail_qty = fields.Integer(compute="_compute_author_mail_qty", store=True)
 
+    active = fields.Boolean(default=True)
+
+    _sql_constraints = [
+        ("name_uniq", "unique (name)", "A contact with the same name already exists."),
+        (
+            "email_uniq",
+            "unique (email)",
+            "A contact with the same email already exists.",
+        ),
+    ]
+
+    # ###########################
+    # Compute Section
+    # ###########################
     @api.depends("author_mail_ids.author_contact_id")
     def _compute_author_mail_qty(self):
         for contact in self:
             contact.author_mail_qty = len(contact.author_mail_ids)
+
+    # ###########################
+    # Button & Action Section
+    # ###########################
 
     def action_view_mails(self):
         mails = self.mapped("author_mail_ids")
@@ -37,6 +55,9 @@ class WebmailContact(models.Model):
         action["domain"] = [("id", "in", mails.ids)]
         return action
 
+    # ###########################
+    # Private Section
+    # ###########################
     def _get_or_create(self, text, multi=False):
         if multi:
             # we have to split
@@ -48,7 +69,9 @@ class WebmailContact(models.Model):
             name = name and name.group("name")
             if not email:
                 raise UserError(_(f"No email found in {text}"))
-            existing_contact = self.search([("email", "=", email)])
+            existing_contact = self.with_context(active_test=False).search(
+                [("email", "=", email)]
+            )
             if existing_contact:
                 if not existing_contact.name and name:
                     existing_contact.write({"name": name})

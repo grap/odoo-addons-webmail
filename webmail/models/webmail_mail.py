@@ -1,7 +1,6 @@
 # Copyright (C) 2023 - Today: OaaFS
 # @author: Sylvain LE GAL (https://twitter.com/legalsylvain)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-import email
 import hashlib
 import logging
 
@@ -114,7 +113,7 @@ class WebmailMail(models.Model):
 
     @api.depends("identifier", "reply_identifier")
     def _compute_conversation_id(self):
-        for mail in self:
+        for mail in self.filtered(lambda x: not x.conversation_id):
             domain = expression.OR(
                 [
                     [("identifier", "=", mail.reply_identifier)],
@@ -177,11 +176,8 @@ class WebmailMail(models.Model):
     # #######################
     # Private Section
     # #######################
-    def _create_or_update_mail(self, webmail_folder, mail_data):
-        email_message = email.message_from_bytes(mail_data, policy=email.policy.default)
-        data = email_message.as_string()
-
-        identifier = self._get_identifier_from_message(email_message, mail_data)
+    def _create_or_update_mail(self, webmail_folder, email_message, conversation=False):
+        identifier = self._get_identifier_from_message(email_message)
         existing_mail = self.search([("identifier", "=", identifier)])
         if existing_mail:
             # If mail exists, we just handle the use case where the mail
@@ -202,7 +198,7 @@ class WebmailMail(models.Model):
             "identifier": identifier,
             "reply_identifier": email_message["In-Reply-To"],
             "date": message_dict["date"],
-            "data": data,
+            "data": email_message.as_string(),
             "folder_id": webmail_folder.id,
             "subject": message_dict.get("subject"),
             "original_from_text": message_dict.get("x_original_from"),
@@ -211,6 +207,8 @@ class WebmailMail(models.Model):
             "cc_text": message_dict["cc"],
             "body": message_dict["body"],
         }
+        if conversation:
+            vals["conversation_id"] = conversation.id
 
         _logger.debug(
             f"[FETCH] {webmail_folder.account_id.login} /"
@@ -232,20 +230,21 @@ class WebmailMail(models.Model):
         return mail
 
     @api.model
-    def _get_identifier_from_message(self, email_message, message_bytes):
+    def _get_identifier_from_message(self, email_message):
         """Extract Message-ID field from message data.
         This field is like a unique ID for email systems.
         In rare case, this fields is not set. In that case,
         we generate a unique text, based on an hash of the email data."""
-        identifier = email_message["Message-ID"]
+        identifier = email_message.get("Message-ID")
         if not identifier:
-            identifier = hashlib.sha256(message_bytes).hexdigest()
+            identifier = hashlib.sha256(email_message.as_string()).hexdigest()
         return identifier
 
     def _prepare_conversation(self):
         self.ensure_one()
         return {
             "account_id": self.account_id.id,
+            "draft_message": False,
         }
 
     def _erase_mail(self):

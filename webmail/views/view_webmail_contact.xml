@@ -12,6 +12,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
             <search>
                 <field name="name" />
                 <field name="email" />
+                <filter name="filter_active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="filter_unactive" string="Archived" domain="[('active','=',False)]"/>
             </search>
         </field>
     </record>
@@ -19,7 +21,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
     <record id="view_webmail_contact_list" model="ir.ui.view">
         <field name="model">webmail.contact</field>
         <field name="arch" type="xml">
-            <list editable="bottom">
+            <list editable="bottom" decoration-muted="active == False">
                 <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_128', 'size': [30, 30]}"/>
                 <field name="name" />
                 <field name="email" />
@@ -64,6 +66,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">webmail.contact</field>
         <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
     </record>
 
     <menuitem

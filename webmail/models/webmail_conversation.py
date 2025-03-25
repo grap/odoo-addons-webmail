@@ -8,7 +8,7 @@ from time import time
 
 from dateutil.relativedelta import relativedelta
 
-from odoo import Command, _, api, fields, models
+from odoo import Command, _, api, fields, models, tools
 from odoo.exceptions import UserError
 
 from .tools import clean_subject
@@ -26,7 +26,7 @@ class WebmailConversation(models.Model):
         comodel_name="webmail.account",
         ondelete="cascade",
         required=True,
-        readonly=True,
+        default=lambda x: x._default_account_id(),
     )
 
     mail_ids = fields.One2many(
@@ -57,17 +57,19 @@ class WebmailConversation(models.Model):
 
     content = fields.Html("Contents", compute="_compute_content")
 
-    pending_answer = fields.Boolean(readonly=True)
+    draft_message = fields.Boolean(readonly=True, default=True)
 
-    answer = fields.Html()
+    message_subject = fields.Char()
+
+    message_body = fields.Html()
 
     has_been_read = fields.Boolean(
         compute="_compute_has_been_read", store=True, inverse="_inverse_has_been_read"
     )
 
-    answer_contact_ids = fields.Many2many(
+    message_contact_ids = fields.Many2many(
         comodel_name="webmail.contact",
-        relation="webmail_conversation_contact_answer_rel",
+        relation="webmail_conversation_contact_message_rel",
     )
 
     read_me = fields.Boolean(
@@ -76,9 +78,21 @@ class WebmailConversation(models.Model):
         help="Technical field, use to mark the conversation as read.",
     )
 
+    def _default_account_id(self):
+        accounts = self.env["webmail.account"].search([])
+        if len(accounts) == 1:
+            return accounts[0]
+
     # ###########################
     # Overload Section
     # ###########################
+    def write(self, vals):
+        if "account_id" in vals:
+            raise UserError(
+                _("Unable to change 'Account' field on existing conversation.")
+            )
+        return super().write(vals)
+
     @api.ondelete(at_uninstall=False)
     def _on_delete(self):
         if self.env.context.get("erase_mail"):
@@ -168,9 +182,9 @@ class WebmailConversation(models.Model):
             # last answer is old. displaying classic date
             conversation.last_mail_date_pretty = ctx_date.strftime("%d/%m/%Y")
 
-    @api.depends("mail_ids.subject")
+    @api.depends("mail_ids.subject", "mail_qty")
     def _compute_subject(self):
-        for conversation in self.filtered(lambda x: x.subject is False):
+        for conversation in self.filtered(lambda x: x.subject is False and x.mail_qty):
             subjects = conversation.mapped("mail_ids.subject")
             subjects = [x for x in subjects if x]
             if not subjects:
@@ -190,23 +204,41 @@ class WebmailConversation(models.Model):
     def button_merge(self):
         self._merge()
 
-    def button_write_answer(self):
-        self.write({"pending_answer": True})
+    def button_write_message(self):
+        external_mails = self.mail_ids.filtered(
+            lambda x: x.author_contact_id.email != self.account_id.login
+        )
+        last_writers = external_mails and external_mails[0].author_contact_id
+        default_subject = False
+        if self.mail_qty:
+            default_subject = self.mail_ids[0].subject
+            if not default_subject.lower().startswith("re: "):
+                default_subject = f"Re: {default_subject}"
 
-    def button_drop_answer(self):
         self.write(
             {
-                "pending_answer": False,
-                "answer": False,
-                "answer_contact_ids": [Command.clear()],
+                "draft_message": True,
+                "message_contact_ids": last_writers
+                and [Command.set(last_writers.ids)]
+                or [],
+                "message_subject": default_subject,
             }
         )
 
-    def button_send_answer(self):
+    def button_drop_draft_message(self):
+        self.write(
+            {
+                "draft_message": False,
+                "message_body": False,
+                "message_contact_ids": [Command.clear()],
+            }
+        )
+
+    def button_send_message(self):
         for conversation in self:
-            conversation._send_answer()
+            conversation._send_message()
             # TODO, Add here the mail that has been sent
-            conversation.button_drop_answer()
+            conversation.button_drop_draft_message()
 
     def action_view_mails(self):
         mails = self.mapped("mail_ids")
@@ -254,23 +286,28 @@ class WebmailConversation(models.Model):
             vals.update({"tag_ids": [Command.link(tag_id) for tag_id in extra_tag_ids]})
         return vals
 
-    def _send_answer(self):
+    def _send_message(self):
         self.ensure_one()
+        if not self.message_subject:
+            raise UserError(_("The field 'Subject' is required to send an email."))
+        if not self.message_contact_ids:
+            raise UserError(_("The field 'To' is required to send an email."))
+        if not tools.html2plaintext(self.message_body):
+            raise UserError(_("The field 'Body' is required to send an email."))
+
         IrMailServer = self.env["ir.mail_server"]
         msg = IrMailServer.build_email(
             email_from=self.account_id.login,
-            email_to=self.answer_contact_ids[0].email,
-            subject=self.subject,
-            body=self.answer,
+            email_to=self.message_contact_ids[0].email,
+            subject=self.message_subject,
+            body=self.message_body,
+            # FIXME: TODO
             # email_cc=email['email_cc'],
-            # reply_to=email['reply_to'],
             # attachments=email['attachments'],
-            # message_id=email['message_id'],
-            # references=email['references'],
-            # object_id=email['object_id'],
             subtype="html",
         )
-        msg["In-Reply-To"] = self.mail_ids[-1].identifier
+        if self.mail_qty:
+            msg["In-Reply-To"] = self.mail_ids[-1].identifier
         # Send the email
         IrMailServer.send_email(
             msg,
@@ -280,7 +317,18 @@ class WebmailConversation(models.Model):
             smtp_password=self.account_id.password,
             smtp_encryption="ssl",
         )
-        # Store the email in the 'Sent' folder
+        # Store the email in the 'Sent' folder Locally
+        sent_folder = self.env["webmail.folder"].search(
+            [
+                ("account_id", "=", self.account_id.id),
+                ("technical_name", "=", "Sent"),
+            ]
+        )
+        self.env["webmail.mail"]._create_or_update_mail(
+            sent_folder, msg, conversation=self
+        )
+
+        # Store the email in the 'Sent' folder of the folder
         client = self.account_id._get_imap_client_connected()
         client.append(
             "Sent", "", imaplib.Time2Internaldate(time()), str(msg).encode("utf-8")
