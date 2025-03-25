@@ -16,7 +16,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <filter string="Authors" name="group_by_author_ids" context="{'group_by': 'author_ids'}"/>
                 <filter string="Tags" name="group_by_tag_ids" context="{'group_by': 'tag_ids'}"/>
                 <filter string="Subjects" name="group_by_subject" context="{'group_by': 'subject'}"/>
-
+                <filter name="filter_active" string="Active" domain="[('active','=',True)]"/>
             </search>
         </field>
     </record>
@@ -49,7 +49,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         data-hotkey="e"
                         context="{'erase_mail': True}"
                         confirm="Are you sure you want to drop the mail(s) on the server ?"/>
-
+                    <button name="action_archive" string="Archive" class="btn-secondary" type="object"/>
+                    <button name="action_unarchive" string="Unarchive" class="btn-secondary" type="object"/>
                 </header>
 
                 <field name="author_ids" widget="many2many_avatar_user"/>
@@ -60,6 +61,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="first_mail_date" optional="hide"/>
                 <field name="last_mail_date" optional="hide"/>
                 <field name="has_been_read" optional="hide" widget="boolean_toggle" string="Read"/>
+                <field name="active" optional="hide" widget="boolean_toggle" />
             </list>
         </field>
     </record>
@@ -75,6 +77,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <button name="unlink" data-hotkey="e" string="Erase (E)" class="btn-warning" type="object"
                         context="{'erase_mail': True}"
                         confirm="Are you sure you want to drop the mail(s) on the server ?"/>
+                    <button name="action_archive" string="Archive" class="btn-secondary" type="object" invisible="not active"/>
+                    <button name="action_unarchive" string="Unarchive" class="btn-secondary" type="object" invisible="active"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -88,6 +92,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                             <field name="mail_qty" widget="statinfo" string="Mails" />
                         </button>
                     </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
                     <group invisible="pending_answer == False">
                         <field name="pending_answer" invisible="1"/>
                         <field name="answer_contact_ids" widget="many2many_avatar_user"/>
@@ -130,6 +136,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">webmail.conversation</field>
         <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False, 'search_default_filter_active': True}</field>
     </record>
 
     <menuitem

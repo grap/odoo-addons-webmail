@@ -37,6 +37,8 @@ class WebmailConversation(models.Model):
 
     tag_ids = fields.Many2many(comodel_name="webmail.tag")
 
+    active = fields.Boolean(default=True)
+
     subject = fields.Char(compute="_compute_subject", store=True)
 
     first_mail_date = fields.Datetime(compute="_compute_dates", store=True)
@@ -217,7 +219,7 @@ class WebmailConversation(models.Model):
     # ###########################
     # Private section
     # ###########################
-    def _merge(self):
+    def _merge(self, enable=False):
         if len(self) <= 1:
             raise UserError(_("Merge conversation requires many conversation"))
 
@@ -227,8 +229,30 @@ class WebmailConversation(models.Model):
 
         # Move the mails
         other_conversations.mail_ids.conversation_id = first_conversation
+        first_conversation_vals = self._prepare_first_conversation_vals(
+            first_conversation, other_conversations, enable
+        )
         other_conversations.unlink()
+        if first_conversation_vals:
+            first_conversation.write(first_conversation_vals)
         return first_conversation
+
+    @api.model
+    def _prepare_first_conversation_vals(
+        first_conversation, other_conversations, enable=False
+    ):
+        vals = {}
+        if not first_conversation.active:
+            if enable or any(other_conversations.mapped("active")):
+                vals.update({"active": True})
+        extra_tag_ids = [
+            x
+            for x in other_conversations.mapped("tag_ids").ids
+            if x not in first_conversation.tag_ids.ids
+        ]
+        if extra_tag_ids:
+            vals.update({"tag_ids": [Command.link(tag_id) for tag_id in extra_tag_ids]})
+        return vals
 
     def _send_answer(self):
         self.ensure_one()

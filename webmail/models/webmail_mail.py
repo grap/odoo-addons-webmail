@@ -138,11 +138,13 @@ class WebmailMail(models.Model):
                     f"[ANALYZE] subject: {mail.subject}. Found existing conversation."
                 )
                 mail.conversation_id = other_mails.mapped("conversation_id")[0].id
+                if not mail.conversation_id.active:
+                    mail.conversation_id.active = True
             else:
                 _logger.info(
                     f"[ANALYZE] subject: {mail.subject}. Found many conversations."
                 )
-                mail.conversation_id = existing_conversations._merge().id
+                mail.conversation_id = existing_conversations._merge(enable=True).id
 
     # #######################
     # Overload Section
