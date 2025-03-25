@@ -19,16 +19,37 @@
   width: 100% !important;
 }
 
-.kanban_mail_inline_text{
+
+
+
+.kanban_mail_inline{
   padding-left: 3px;
+}
+
+.kanban_mail_inline_field{
   font-weight: bold;
 }
 
-.kanban_mail_inline_text_static{
-  padding-left: 3px;
+.kanban_mail_inline_counter {
+  float:left;
+  font-weight: bold;
+  font-size:16px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.kanban_mail_inline_static{
   color: gray !important;
 }
 
 .o_list_renderer div.o_boolean_toggle .form-check-input{
   height:20px;
+}
+
+.mail_header_content {
+  padding: 0px;
+  background-color: #FFD;
+  height: 50px;
+  line-height: 50px;
+  border: 1px solid lightgray;
 }

@@ -77,6 +77,8 @@ class WebmailMail(models.Model):
         ondelete="set null",
     )
 
+    author_avatar_256 = fields.Image(related="author_contact_id.avatar_256")
+
     to_text = fields.Char(readonly=True)
 
     cc_text = fields.Char(readonly=True)
@@ -85,9 +87,18 @@ class WebmailMail(models.Model):
 
     has_been_read = fields.Boolean()
 
+    counter_text = fields.Char(compute="_compute_counter_text")
+
     # #######################
     # Compute Section
     # #######################
+    @api.depends("conversation_id.mail_ids")
+    def _compute_counter_text(self):
+        for mail in self:
+            total = mail.conversation_id.mail_qty
+            counter = total - mail.conversation_id.mail_ids.ids.index(mail.id)
+            mail.counter_text = f"{counter} / {total}"
+
     @api.depends("from_text", "original_from_text")
     def _compute_author_contact_id(self):
         for mail in self:

@@ -112,11 +112,18 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                                 <t t-name="card" class="flex-row kanban_mail_full_screen">
                                     <main class="w-100 ps-2 pt-1">
                                         <div>
-                                            <field name="author_contact_id" class="kanban_mail_inline_text"/>
-                                            <span class="kanban_mail_inline_text_static">wrote on</span>
-                                            <field name="date" class="kanban_mail_inline_text"/>
+                                            <div class="mail_header_content" style="float:left;">
+                                                <field name="counter_text" class="kanban_mail_inline_counter"/>
+                                            </div>
+                                            <div class="mail_header_content" style="float:left;">
+                                                <field name="author_avatar_256" widget="image" class="oe_avatar" options="{'preview_image': 'author_avatar_256', 'size': [50, 50]}"/>
+                                            </div>
+                                            <div class="mail_header_content">
+                                                <field name="author_contact_id" class="kanban_mail_inline kanban_mail_inline_field"/>
+                                                <span class="kanban_mail_inline kanban_mail_inline_static">wrote on</span>
+                                                <field name="date" class="kanban_mail_inline kanban_mail_inline_field"/>
+                                            </div>
                                         </div>
-                                        <hr/>
                                         <div>
                                             <field name="body" widget="html_mail" class="hide_reply_and_author"/>
                                         </div>
