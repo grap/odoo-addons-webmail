@@ -63,6 +63,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="last_mail_date" optional="hide"/>
                 <field name="has_been_read" optional="hide" widget="boolean_toggle" string="Read"/>
                 <field name="active" optional="hide" widget="boolean_toggle" />
+                <button name="action_archive" string=" Archive" type="object" class="oi oi-archive"/>
             </list>
         </field>
     </record>

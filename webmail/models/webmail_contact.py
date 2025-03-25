@@ -22,12 +22,13 @@ class WebmailContact(models.Model):
         comodel_name="webmail.mail", inverse_name="author_contact_id"
     )
 
+    technical_name = fields.Char(compute="_compute_technical_name", store=True)
+
     author_mail_qty = fields.Integer(compute="_compute_author_mail_qty", store=True)
 
     active = fields.Boolean(default=True)
 
     _sql_constraints = [
-        ("name_uniq", "unique (name)", "A contact with the same name already exists."),
         (
             "email_uniq",
             "unique (email)",
@@ -42,6 +43,15 @@ class WebmailContact(models.Model):
     def _compute_author_mail_qty(self):
         for contact in self:
             contact.author_mail_qty = len(contact.author_mail_ids)
+
+    @api.depends("email", "name")
+    def _compute_technical_name(self):
+        for contact in self:
+            if contact.name:
+                sanitized_name = contact.name.replace('"', "").replace(",", "")
+                contact.technical_name = f'"{sanitized_name}" <{contact.email}>'
+            else:
+                contact.technical_name = contact.email
 
     # ###########################
     # Button & Action Section

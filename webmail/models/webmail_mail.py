@@ -207,17 +207,21 @@ class WebmailMail(models.Model):
             "cc_text": message_dict["cc"],
             "body": message_dict["body"],
         }
-        if conversation:
-            vals["conversation_id"] = conversation.id
 
         _logger.debug(
             f"[FETCH] {webmail_folder.account_id.login} /"
             f" {webmail_folder.technical_name}:"
             f" Creation of mail {identifier}."
         )
-        webmail_folder.account_id.user_id.notify_info(
-            title="New mail", message=f"<b>Subject</b>{message_dict.get('subject')}"
-        )
+
+        if conversation:
+            vals["conversation_id"] = conversation.id
+        else:
+            webmail_folder.account_id.user_id.notify_info(
+                title="New mail",
+                message=f"<b>Subject</b><br />{message_dict.get('subject')}",
+                sticky=True,
+            )
         mail = self.create(vals)
         if message_dict["attachments"]:
             res = self.env["mail.thread"]._process_attachments_for_post(

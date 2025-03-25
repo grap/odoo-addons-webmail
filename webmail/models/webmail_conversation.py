@@ -182,9 +182,14 @@ class WebmailConversation(models.Model):
             # last answer is old. displaying classic date
             conversation.last_mail_date_pretty = ctx_date.strftime("%d/%m/%Y")
 
-    @api.depends("mail_ids.subject", "mail_qty")
+    @api.depends("mail_ids.subject", "mail_qty", "message_subject")
     def _compute_subject(self):
+        for conversation in self.filtered(lambda x: not x.mail_qty):
+            # Conversation comes from mail we wrote
+            conversation.subject = conversation.message_subject
+
         for conversation in self.filtered(lambda x: x.subject is False and x.mail_qty):
+            # Conversation comes from external mails
             subjects = conversation.mapped("mail_ids.subject")
             subjects = [x for x in subjects if x]
             if not subjects:
@@ -262,7 +267,7 @@ class WebmailConversation(models.Model):
         # Move the mails
         other_conversations.mail_ids.conversation_id = first_conversation
         first_conversation_vals = self._prepare_first_conversation_vals(
-            first_conversation, other_conversations, enable
+            first_conversation, other_conversations, enable=enable
         )
         other_conversations.unlink()
         if first_conversation_vals:
@@ -271,7 +276,7 @@ class WebmailConversation(models.Model):
 
     @api.model
     def _prepare_first_conversation_vals(
-        first_conversation, other_conversations, enable=False
+        self, first_conversation, other_conversations, enable=False
     ):
         vals = {}
         if not first_conversation.active:
@@ -298,7 +303,7 @@ class WebmailConversation(models.Model):
         IrMailServer = self.env["ir.mail_server"]
         msg = IrMailServer.build_email(
             email_from=self.account_id.login,
-            email_to=self.message_contact_ids[0].email,
+            email_to=",".join(self.mapped("message_contact_ids.technical_name")),
             subject=self.message_subject,
             body=self.message_body,
             # FIXME: TODO
