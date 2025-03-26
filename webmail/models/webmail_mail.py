@@ -4,7 +4,7 @@
 import hashlib
 import logging
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.osv import expression
 from odoo.tools.mail import decode_message_header, email_split_and_format
@@ -76,6 +76,20 @@ class WebmailMail(models.Model):
         ondelete="set null",
     )
 
+    to_contact_ids = fields.Many2many(
+        relation="webmail_contact_webmail_mail_to_rel",
+        comodel_name="webmail.contact",
+        compute="_compute_to_contact_ids",
+        store=True,
+    )
+
+    cc_contact_ids = fields.Many2many(
+        relation="webmail_contact_webmail_mail_cc_rel",
+        comodel_name="webmail.contact",
+        compute="_compute_cc_contact_ids",
+        store=True,
+    )
+
     author_avatar_256 = fields.Image(related="author_contact_id.avatar_256")
 
     to_text = fields.Char(readonly=True)
@@ -104,6 +118,22 @@ class WebmailMail(models.Model):
             mail.author_contact_id = self.env["webmail.contact"]._get_or_create(
                 mail.original_from_text or mail.from_text
             )
+
+    @api.depends("to_text")
+    def _compute_to_contact_ids(self):
+        for mail in self.filtered(lambda x: x.to_text):
+            contacts = self.env["webmail.contact"]
+            for string in email_split_and_format(mail.to_text):
+                contacts |= self.env["webmail.contact"]._get_or_create(string)
+            mail.to_contact_ids = [Command.set(contacts.ids)]
+
+    @api.depends("cc_text")
+    def _compute_cc_contact_ids(self):
+        for mail in self.filtered(lambda x: x.cc_text):
+            contacts = self.env["webmail.contact"]
+            for string in email_split_and_format(mail.cc_text):
+                contacts |= self.env["webmail.contact"]._get_or_create(string)
+            mail.cc_contact_ids = [Command.set(contacts.ids)]
 
     @api.depends("reply_identifier")
     def _compute_origin_mail_id(self):
