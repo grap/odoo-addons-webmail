@@ -101,7 +101,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <group invisible="draft_message == False">
                         <field name="draft_message" invisible="1"/>
                         <field name="account_id" invisible="mail_qty != 0" options="{'no_create': True}" string="From"/>
-                        <field name="message_contact_ids" widget="many2many_tags" string="To" context="{'active_test': True}"/>
+                        <field name="to_contact_ids" widget="many2many_tags" string="To" context="{'active_test': True}"/>
+                        <field name="cc_contact_ids" widget="many2many_tags" string="Cc" context="{'active_test': True}"/>
                         <field name="message_subject" string="Subject" />
                         <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                         <field name="message_body"  nolabel="1" style="border: 1px solid; min-height:200px;" />
@@ -128,6 +129,16 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                                                 <field name="author_contact_id" class="kanban_mail_inline kanban_mail_inline_field"/>
                                                 <span class="kanban_mail_inline kanban_mail_inline_static">wrote on</span>
                                                 <field name="date" class="kanban_mail_inline kanban_mail_inline_field"/>
+                                                <br />
+                                            </div>
+                                            <div class="mail_header_content">
+                                                <span class="kanban_mail_inline kanban_mail_inline_static" style="float: left; vertical-align: top; line-height: 20px;">To: </span>
+                                                <field name="to_contact_ids" class="kanban_mail_inline_to_fields"/>
+                                            </div>
+                                            <div class="mail_header_content" invisible="cc_contact_qty == 0">
+                                                <span class="kanban_mail_inline kanban_mail_inline_static" style="float: left; vertical-align: top; line-height: 20px;">Cc: </span>
+                                                <field name="cc_contact_ids" class="kanban_mail_inline_cc_fields"/>
+                                                <field name="cc_contact_qty" invisible="1"/>
                                             </div>
                                         </div>
                                         <div>

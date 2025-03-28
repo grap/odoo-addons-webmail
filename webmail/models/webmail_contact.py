@@ -5,6 +5,7 @@ import re
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.tools.mail import formataddr
 
 
 class WebmailContact(models.Model):
@@ -22,7 +23,7 @@ class WebmailContact(models.Model):
         comodel_name="webmail.mail", inverse_name="author_contact_id"
     )
 
-    technical_name = fields.Char(compute="_compute_technical_name", store=True)
+    formatted_address = fields.Char(compute="_compute_formatted_address", store=True)
 
     author_mail_qty = fields.Integer(compute="_compute_author_mail_qty", store=True)
 
@@ -45,13 +46,9 @@ class WebmailContact(models.Model):
             contact.author_mail_qty = len(contact.author_mail_ids)
 
     @api.depends("email", "name")
-    def _compute_technical_name(self):
+    def _compute_formatted_address(self):
         for contact in self:
-            if contact.name:
-                sanitized_name = contact.name.replace('"', "").replace(",", "")
-                contact.technical_name = f'"{sanitized_name}" <{contact.email}>'
-            else:
-                contact.technical_name = contact.email
+            contact.formatted_address = formataddr((contact.name, contact.email))
 
     # ###########################
     # Button & Action Section
@@ -79,6 +76,7 @@ class WebmailContact(models.Model):
             name = name and name.group("name")
             if not email:
                 raise UserError(_(f"No email found in {text}"))
+            email = email.lower()
             existing_contact = self.with_context(active_test=False).search(
                 [("email", "=", email)]
             )

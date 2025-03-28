@@ -86,9 +86,11 @@ class WebmailMail(models.Model):
     cc_contact_ids = fields.Many2many(
         relation="webmail_contact_webmail_mail_cc_rel",
         comodel_name="webmail.contact",
-        compute="_compute_cc_contact_ids",
+        compute="_compute_cc_contacts",
         store=True,
     )
+
+    cc_contact_qty = fields.Integer(compute="_compute_cc_contacts", store=True)
 
     author_avatar_256 = fields.Image(related="author_contact_id.avatar_256")
 
@@ -128,12 +130,13 @@ class WebmailMail(models.Model):
             mail.to_contact_ids = [Command.set(contacts.ids)]
 
     @api.depends("cc_text")
-    def _compute_cc_contact_ids(self):
+    def _compute_cc_contacts(self):
         for mail in self.filtered(lambda x: x.cc_text):
             contacts = self.env["webmail.contact"]
             for string in email_split_and_format(mail.cc_text):
                 contacts |= self.env["webmail.contact"]._get_or_create(string)
             mail.cc_contact_ids = [Command.set(contacts.ids)]
+            mail.cc_contact_qty = len(mail.cc_contact_ids)
 
     @api.depends("reply_identifier")
     def _compute_origin_mail_id(self):

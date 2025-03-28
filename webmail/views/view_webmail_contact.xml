@@ -26,6 +26,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="name" />
                 <field name="email" />
                 <field name="author_mail_qty" />
+                <field name="formatted_address" optional="hide" />
             </list>
         </field>
     </record>
@@ -55,6 +56,9 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         <label for="email"/>
                         <h2><field name="email"/></h2>
                     </div>
+                    <group>
+                        <field name="formatted_address" />
+                    </group>
                 </sheet>
             </form>
         </field>

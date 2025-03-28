@@ -67,9 +67,14 @@ class WebmailConversation(models.Model):
         compute="_compute_has_been_read", store=True, inverse="_inverse_has_been_read"
     )
 
-    message_contact_ids = fields.Many2many(
+    to_contact_ids = fields.Many2many(
         comodel_name="webmail.contact",
-        relation="webmail_conversation_contact_message_rel",
+        relation="webmail_conversation_webmail_contact_to_rel",
+    )
+
+    cc_contact_ids = fields.Many2many(
+        comodel_name="webmail.contact",
+        relation="webmail_conversation_webmail_contact_cc_rel",
     )
 
     read_me = fields.Boolean(
@@ -210,21 +215,28 @@ class WebmailConversation(models.Model):
         self._merge()
 
     def button_write_message(self):
-        external_mails = self.mail_ids.filtered(
-            lambda x: x.author_contact_id.email != self.account_id.login
-        )
-        last_writers = external_mails and external_mails[0].author_contact_id
         default_subject = False
+        last_to_contacts = False
+        last_cc_contacts = False
         if self.mail_qty:
-            default_subject = self.mail_ids[0].subject
+            last_mail = self.mail_ids[0]
+            last_to_contacts = (
+                last_mail.author_contact_id | last_mail.to_contact_ids
+            ).filtered(lambda x: x.email != self.account_id.login)
+            last_cc_contacts = (last_mail.cc_contact_ids).filtered(
+                lambda x: x.email != self.account_id.login
+            )
+            default_subject = last_mail.subject
             if not default_subject.lower().startswith("re: "):
                 default_subject = f"Re: {default_subject}"
-
         self.write(
             {
                 "draft_message": True,
-                "message_contact_ids": last_writers
-                and [Command.set(last_writers.ids)]
+                "to_contact_ids": last_to_contacts
+                and [Command.set(last_to_contacts.ids)]
+                or [],
+                "cc_contact_ids": last_cc_contacts
+                and [Command.set(last_cc_contacts.ids)]
                 or [],
                 "message_subject": default_subject,
             }
@@ -235,7 +247,8 @@ class WebmailConversation(models.Model):
             {
                 "draft_message": False,
                 "message_body": False,
-                "message_contact_ids": [Command.clear()],
+                "to_contact_ids": [Command.clear()],
+                "cc_contact_ids": [Command.clear()],
             }
         )
 
@@ -295,7 +308,7 @@ class WebmailConversation(models.Model):
         self.ensure_one()
         if not self.message_subject:
             raise UserError(_("The field 'Subject' is required to send an email."))
-        if not self.message_contact_ids:
+        if not self.to_contact_ids:
             raise UserError(_("The field 'To' is required to send an email."))
         if not tools.html2plaintext(self.message_body):
             raise UserError(_("The field 'Body' is required to send an email."))
@@ -303,11 +316,11 @@ class WebmailConversation(models.Model):
         IrMailServer = self.env["ir.mail_server"]
         msg = IrMailServer.build_email(
             email_from=self.account_id.login,
-            email_to=",".join(self.mapped("message_contact_ids.technical_name")),
+            email_to=self.mapped("to_contact_ids.formatted_address"),
+            email_cc=self.mapped("cc_contact_ids.formatted_address"),
             subject=self.message_subject,
             body=self.message_body,
             # FIXME: TODO
-            # email_cc=email['email_cc'],
             # attachments=email['attachments'],
             subtype="html",
         )
