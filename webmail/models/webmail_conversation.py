@@ -255,7 +255,6 @@ class WebmailConversation(models.Model):
     def button_send_message(self):
         for conversation in self:
             conversation._send_message()
-            # TODO, Add here the mail that has been sent
             conversation.button_drop_draft_message()
 
     def action_view_mails(self):
