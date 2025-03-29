@@ -5,8 +5,10 @@
     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 -->
 <odoo>
+
     <record id="demo_webmail_account" model="webmail.account">
         <field name="url">mail.google.com</field>
+        <field name="port">465</field>
         <field name="login">login</field>
         <field name="password">password</field>
         <field name="user_id" ref="base.user_admin" />
