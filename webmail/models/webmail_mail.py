@@ -1,8 +1,12 @@
 # Copyright (C) 2023 - Today: OaaFS
 # @author: Sylvain LE GAL (https://twitter.com/legalsylvain)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+import datetime
+import email
 import hashlib
 import logging
+
+import imap_tools
 
 from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
@@ -291,9 +295,10 @@ class WebmailMail(models.Model):
             )
         client = self.mapped("account_id")._get_imap_client_connected()
         for mail in self:
-            client.select(mail.folder_id.technical_name)
-            res = client.search(None, f'(HEADER Message-ID "{mail.identifier}")')
-            if not res[0] == "OK" or len(res[1]) != 1 or res[1][0] == b"":
+            num = mail._find_mail(client)
+            if num:
+                client.store(num, "+FLAGS", "\\Deleted")
+            else:
                 mail.account_id.user_id.notify_danger(
                     _(
                         f"Mail {mail.subject}. ({mail.identifier}"
@@ -301,9 +306,44 @@ class WebmailMail(models.Model):
                     ),
                     sticky=True,
                 )
-                continue
-
-            client.store(res[1][0], "+FLAGS", "\\Deleted")
         client.expunge()
         client.close()
         client.logout()
+
+    def _find_mail(self, client):
+        """Find an email in the distant imap folder and return then 'num'
+        of the email, or False if not found."""
+        self.ensure_one()
+        client.select(self.folder_id.technical_name)
+
+        # First, look by Message-ID
+        status, search_result = client.search(
+            None, f'(HEADER Message-ID "{self.identifier}")'
+        )
+        if status == "OK" and len(search_result) == 1 and search_result[0] != b"":
+            return search_result[0]
+
+        mail_date = datetime.date(self.date.year, self.date.month, self.date.day)
+
+        domain = str(
+            imap_tools.AND(
+                date_gte=mail_date + datetime.timedelta(days=-1),
+                date_lt=mail_date + datetime.timedelta(days=+1),
+            )
+        )
+        client.search(None, domain)
+        status, search_result = client.search(None, domain)
+
+        if status == "OK":
+            num_list = search_result[0].split()
+            for num in num_list:
+                status, mail_data = client.fetch(
+                    num, "(BODY[HEADER.FIELDS (MESSAGE-ID)])"
+                )
+                email_message = email.message_from_bytes(
+                    mail_data[0][1], policy=email.policy.default
+                )
+                if email_message.get("Message-ID") == self.identifier:
+                    return num
+
+        return False
