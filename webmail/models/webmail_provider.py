@@ -18,7 +18,13 @@ class WebmailProvider(models.Model):
 
     imap_port = fields.Integer(required=True, default=993)
 
-    smtp_url = fields.Char(required=True, compute="_compute_smtp_url")
+    smtp_url = fields.Char(
+        required=True,
+        compute="_compute_smtp_url",
+        readonly=False,
+        store=True,
+        precompute=True,
+    )
 
     smtp_port = fields.Integer(required=True, default=465)
 

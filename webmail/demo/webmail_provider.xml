@@ -10,30 +10,22 @@
         <field name="image_1920" type="base64" file="webmail/static/img/provider_ouvaton.png"/>
         <field name="name">Ouvaton</field>
         <field name="imap_url">imap.ouvaton.coop</field>
-        <field name="imap_port">993</field>
         <field name="documentation_url">https://ouvaton.coop/configurer-son-logiciel-de-messagerie/</field>
         <field name="smtp_url">smtp.ouvaton.coop</field>
-        <field name="smtp_port">465</field>
     </record>
 
     <record id="provider_galae" model="webmail.provider">
         <field name="image_1920" type="base64" file="webmail/static/img/provider_galae.png"/>
         <field name="name">Galae</field>
         <field name="imap_url">mail.galae.net</field>
-        <field name="imap_port">993</field>
         <field name="documentation_url">https://public-community.galae.net/ui/workspaces/3/contents/html-document/1318</field>
-        <field name="smtp_url">mail.galae.net</field>
-        <field name="smtp_port">465</field>
     </record>
 
     <record id="provider_gandi" model="webmail.provider">
         <field name="image_1920" type="base64" file="webmail/static/img/provider_gandi.png"/>
         <field name="name">Gandi</field>
         <field name="imap_url">mail.gandi.net</field>
-        <field name="imap_port">993</field>
         <field name="documentation_url">https://docs.gandi.net/fr/gandimail/configuration_messagerie/index.html</field>
-        <field name="smtp_url">mail.gandi.net</field>
-        <field name="smtp_port">465</field>
     </record>
 
 </odoo>

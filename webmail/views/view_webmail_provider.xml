@@ -23,6 +23,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="name" />
                 <field name="imap_url" />
                 <field name="imap_port" />
+                <field name="smtp_url" />
+                <field name="smtp_port" />
             </list>
         </field>
     </record>
