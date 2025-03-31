@@ -51,12 +51,12 @@ class TestWebmailFetchData(TransactionCase):
         with mock.patch("imaplib.IMAP4_SSL", return_value=FakeIMAPClient()):
             # Check Connexion
             self.webmail_account.button_test_connexion()
-            self.assertEqual(len(self.webmail_account.folder_ids), 1)
+            initial_folder_qty = len(self.webmail_account.folder_ids)
 
             # Check Fetch Folders
             self.webmail_account.button_fetch_folders()
             folders = self.webmail_account.folder_ids
-            self.assertEqual(len(folders), 5)
+            self.assertEqual(len(folders), initial_folder_qty + 4)
             self.assertIn("Rangé", folders.mapped("complete_name"))
             self.assertIn("Rangé / CIE", folders.mapped("complete_name"))
             self.assertIn("Rangé / Coopaname", folders.mapped("complete_name"))

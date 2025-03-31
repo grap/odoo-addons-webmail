@@ -79,4 +79,43 @@ ail</html>
 ]]></field>
     </record>
 
+
+    <record id="demo_webmail_mail_2" model="webmail.mail">
+        <field name="identifier">2d22039f-ac7a-4481-a100-c2277aeb85c8@grap.coop</field>
+        <field name="reply_identifier">59fd-67eb1300-5-33889840@235892895</field>
+        <field name="folder_id" ref="webmail.demo_folder_sent" />
+        <field name="date">2025-04-01</field>
+        <field name="subject">Re: Hey ! How are you ?</field>
+        <field name="from_text">"My LOGIN" &lt;login@domain.tld&gt;</field>
+        <field name="data"><![CDATA[
+
+Message-ID: <2d22039f-ac7a-4481-a100-c2277aeb85c8@grap.coop>
+Date: Tue, 1 Apr 2025 00:42:49 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: Hey ! How are you ?
+To: "My Name (My Company)" <my-name@my-company.fr>
+References: <59fd-67eb1300-5-33889840@235892895>
+Content-Language: fr
+From: "My LOGIN" <login@domain.tld>
+In-Reply-To: <59fd-67eb1300-5-33889840@235892895>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Hi,
+
+All Is OK !
+
+Le 01/04/2025 Ã  00:10, My Name (My Company) a Ã©critÂ :
+> Hi,
+>
+> I haven't heard from you in a long time. I hope you're well.
+>
+> See you soon!
+>
+> --
+> Author of the email
+]]></field>
+    </record>
+
 </odoo>

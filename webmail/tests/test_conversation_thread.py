@@ -17,6 +17,7 @@ class TestConversationThread(TransactionCase):
         cls.folder_inbox = cls.env.ref("webmail.demo_folder_inbox")
         cls.WebmailConversation = cls.env["webmail.conversation"]
         cls.WebmailMail = cls.env["webmail.mail"]
+        cls.initial_conversations = cls.WebmailConversation.search([])
 
     def _create_mail(self, identifier, reply_identifier):
         return self.WebmailMail.create(
@@ -31,7 +32,9 @@ class TestConversationThread(TransactionCase):
         )
 
     def _getConversations(self):
-        return self.WebmailConversation.search([])
+        return self.WebmailConversation.search(
+            [("id", "not in", self.initial_conversations.ids)]
+        )
 
     def test_conversation_creation(self):
         self.assertEqual(
