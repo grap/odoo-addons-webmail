@@ -46,7 +46,6 @@ class TestWebmailFetchData(TransactionCase):
         super().setUpClass()
 
         cls.webmail_account = cls.env.ref("webmail.demo_webmail_account")
-        cls.webmail_folder = cls.env.ref("webmail.demo_webmail_folder")
 
     def test_connexion(self):
         with mock.patch("imaplib.IMAP4_SSL", return_value=FakeIMAPClient()):

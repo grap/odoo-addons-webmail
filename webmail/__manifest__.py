@@ -40,5 +40,6 @@
     "demo": [
         "demo/webmail_account.xml",
         "demo/webmail_folder.xml",
+        "demo/webmail_mail.xml",
     ],
 }

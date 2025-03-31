@@ -14,7 +14,7 @@ class TestConversationThread(TransactionCase):
         super().setUpClass()
 
         cls.webmail_account = cls.env.ref("webmail.demo_webmail_account")
-        cls.webmail_folder = cls.env.ref("webmail.demo_webmail_folder")
+        cls.folder_inbox = cls.env.ref("webmail.demo_folder_inbox")
         cls.WebmailConversation = cls.env["webmail.conversation"]
         cls.WebmailMail = cls.env["webmail.mail"]
 
@@ -25,7 +25,7 @@ class TestConversationThread(TransactionCase):
                 "subject": f"Subject {identifier}",
                 "identifier": identifier,
                 "reply_identifier": reply_identifier,
-                "folder_id": self.webmail_folder.id,
+                "folder_id": self.folder_inbox.id,
                 "from_text": "from@test.fr",
             }
         )
