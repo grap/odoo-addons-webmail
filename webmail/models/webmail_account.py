@@ -14,9 +14,19 @@ class WebmailAccount(models.Model):
     _description = "Webmail Accounts"
     _rec_name = "login"
 
-    url = fields.Char(required=True)
+    provider_id = fields.Many2one(comodel_name="webmail.provider", required=True)
 
-    port = fields.Integer(required=True)
+    imap_url = fields.Char(required=True, compute="_compute_url_port", readonly=False)
+
+    imap_port = fields.Integer(
+        required=True, compute="_compute_url_port", readonly=False
+    )
+
+    smtp_url = fields.Char(required=True, compute="_compute_url_port", readonly=False)
+
+    smtp_port = fields.Integer(
+        required=True, compute="_compute_url_port", readonly=False
+    )
 
     login = fields.Char(required=True)
 
@@ -42,7 +52,9 @@ class WebmailAccount(models.Model):
 
     mail_qty = fields.Integer(compute="_compute_mail_qty", store=True)
 
+    # ###########################
     # Overload Section
+    # ###########################
     @api.model_create_multi
     def create(self, vals_list):
         accounts = super().create(vals_list)
@@ -50,7 +62,17 @@ class WebmailAccount(models.Model):
             account.cron_id = self.env["ir.cron"].create(account._prepare_cron())
         return accounts
 
+    # ###########################
     # Compute Section
+    # ###########################
+    @api.depends("provider_id")
+    def _compute_url_port(self):
+        for account in self.filtered(lambda x: x.provider_id):
+            account.imap_url = account.imap_url or account.provider_id.imap_url
+            account.imap_port = account.imap_port or account.provider_id.imap_port
+            account.smtp_url = account.smtp_url or account.provider_id.smtp_url
+            account.smtp_port = account.smtp_port or account.provider_id.smtp_port
+
     @api.depends("folder_ids")
     def _compute_folder_qty(self):
         for account in self:
@@ -96,15 +118,17 @@ class WebmailAccount(models.Model):
     def _get_imap_client_connected(self):
         self.ensure_one()
         try:
-            client = imaplib.IMAP4_SSL(self.url)
+            client = imaplib.IMAP4_SSL(self.imap_url, self.imap_port)
         except socket.gaierror as e:
             raise UserError(
                 _(
-                    "server '%s' has not been reached. Possible Reasons: \n"
+                    "server '%(url)s:%(port)s' has not been reached."
+                    " Possible Reasons: \n"
                     "- the server doesn't exist"
-                    "- your odoo instance faces to network issue"
+                    "- your odoo instance faces to network issue",
+                    url=self.imap_url,
+                    port=self.imap_port,
                 )
-                % (self.url)
             ) from e
 
         try:

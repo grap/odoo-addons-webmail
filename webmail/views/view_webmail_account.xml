@@ -11,7 +11,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <search>
                 <field name="login" />
-                <field name="url" />
+                <field name="provider_id" />
             </search>
         </field>
     </record>
@@ -21,8 +21,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <list>
                 <field name="login" />
-                <field name="url" />
-                <field name="port" />
+                <field name="provider_id" />
+                <field name="imap_url" optional="show" />
+                <field name="imap_port" optional="show"/>
+                <field name="smtp_url" optional="show"/>
+                <field name="smtp_port" optional="show"/>
             </list>
         </field>
     </record>
@@ -75,8 +78,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     </div>
                     <group>
                         <group>
-                            <field name="url" />
-                            <field name="port" />
+                            <field name="provider_id" />
+                            <field name="imap_url" />
+                            <field name="imap_port"/>
+                            <field name="smtp_url" />
+                            <field name="smtp_port"/>
                             <field name="login" />
                             <field name="password" password="True" />
                             <field name="user_id" />

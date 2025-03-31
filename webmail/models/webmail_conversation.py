@@ -328,8 +328,8 @@ class WebmailConversation(models.Model):
         # Send the email
         IrMailServer.send_email(
             msg,
-            smtp_server=self.account_id.url,
-            smtp_port=self.account_id.port,
+            smtp_server=self.account_id.smtp_url,
+            smtp_port=self.account_id.smtp_port,
             smtp_user=self.account_id.login,
             smtp_password=self.account_id.password,
             smtp_encryption="ssl",
