@@ -39,6 +39,12 @@ class FakeIMAPClient:
     def fetch(self, arg1, arg2):
         return ("OK", [(b"2 (RFC822 {3335}", mail_data_1)])
 
+    def store(self, arg1, arg2, arg3):
+        return ("OK", [b"1"])
+
+    def expunge(self):
+        return ("OK", [b"1"])
+
 
 class TestWebmailFetchData(TransactionCase):
     @classmethod
@@ -49,11 +55,13 @@ class TestWebmailFetchData(TransactionCase):
 
     def test_connexion(self):
         with mock.patch("imaplib.IMAP4_SSL", return_value=FakeIMAPClient()):
-            # Check Connexion
+            # #######################
+            # Connexion
             self.webmail_account.button_test_connexion()
             initial_folder_qty = len(self.webmail_account.folder_ids)
 
-            # Check Fetch Folders
+            # #######################
+            # Fetch Folders
             self.webmail_account.button_fetch_folders()
             folders = self.webmail_account.folder_ids
             self.assertEqual(len(folders), initial_folder_qty + 4)
@@ -71,6 +79,9 @@ class TestWebmailFetchData(TransactionCase):
                 lambda x: x.name == "CIE"
             )
             self.assertEqual(len(cie_folder.mail_ids), 0)
+
+            # #######################
+            # Fetch Mails
             cie_folder.button_fetch_mails()
             self.assertEqual(len(cie_folder.mail_ids), 1)
             mail = cie_folder.mail_ids
@@ -94,5 +105,15 @@ class TestWebmailFetchData(TransactionCase):
                 ),
             )
 
-            self.assertEqual(mail.conversation_id.subject, "Test Subject")
-            self.assertEqual(mail.conversation_id.mail_qty, 1)
+            conversation = mail.conversation_id
+            self.assertEqual(conversation.subject, "Test Subject")
+            self.assertEqual(conversation.mail_qty, 1)
+
+            # #######################
+            # Erase Mail
+            conversation.with_context(erase_mail=True).unlink()
+            self.assertEqual(
+                len(cie_folder.mail_ids),
+                0,
+                "Unlink converation should unlink related mails",
+            )
