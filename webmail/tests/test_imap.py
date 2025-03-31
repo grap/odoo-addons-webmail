@@ -46,7 +46,7 @@ class FakeIMAPClient:
         return ("OK", [b"1"])
 
 
-class TestWebmailFetchData(TransactionCase):
+class TestImap(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
