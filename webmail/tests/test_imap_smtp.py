@@ -6,6 +6,7 @@ from unittest import mock
 
 from markupsafe import Markup
 
+from odoo import Command, api
 from odoo.tests.common import TransactionCase
 
 from .mail_data import mail_data_1
@@ -45,6 +46,9 @@ class FakeIMAPClient:
     def expunge(self):
         return ("OK", [b"1"])
 
+    def append(self, arg1, arg2, arg3, arg4):
+        return ("OK", [b"1"])
+
 
 class TestImap(TransactionCase):
     @classmethod
@@ -52,8 +56,9 @@ class TestImap(TransactionCase):
         super().setUpClass()
 
         cls.webmail_account = cls.env.ref("webmail.demo_webmail_account")
+        cls.webmail_contact = cls.env.ref("webmail.demo_contact_1")
 
-    def test_connexion(self):
+    def test_imap(self):
         with mock.patch("imaplib.IMAP4_SSL", return_value=FakeIMAPClient()):
             # #######################
             # Connexion
@@ -108,6 +113,23 @@ class TestImap(TransactionCase):
             conversation = mail.conversation_id
             self.assertEqual(conversation.subject, "Test Subject")
             self.assertEqual(conversation.mail_qty, 1)
+
+            @api.model
+            def send_email(self, message, *args, **kwargs):
+                return True
+
+            self.patch(self.registry["ir.mail_server"], "send_email", send_email)
+            conversation.write(
+                {
+                    "draft_message": True,
+                    "message_subject": "Re!",
+                    "to_contact_ids": [Command.set(self.webmail_contact.ids)],
+                    "message_body": "<div>OK !!!!</div>",
+                }
+            )
+
+            conversation.button_send_message()
+            self.assertFalse(conversation.draft_message)
 
             # #######################
             # Erase Mail
