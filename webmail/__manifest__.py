@@ -22,6 +22,7 @@
         "security/ir_rule.xml",
         "security/res_groups.xml",
         "security/ir.model.access.csv",
+        "data/webmail_provider.xml",
         "views/menu.xml",
         "views/view_webmail_account.xml",
         "views/view_webmail_provider.xml",
@@ -37,7 +38,6 @@
         ],
     },
     "demo": [
-        "demo/webmail_provider.xml",
         "demo/webmail_account.xml",
         "demo/webmail_folder.xml",
     ],

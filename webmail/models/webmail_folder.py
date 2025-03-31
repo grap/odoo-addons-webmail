@@ -60,7 +60,42 @@ class WebmailFolder(models.Model):
 
     last_fetch_date = fields.Date(readonly=True)
 
+    limited_fetch = fields.Boolean(
+        compute="_compute_limited_fetch",
+        inverse="_inverse_limited_fetch",
+        readonly=False,
+        store=True,
+    )
+
+    included_in_cron_fetch = fields.Boolean(
+        compute="_compute_included_in_cron_fetch", readonly=False, store=True
+    )
+
+    # ###########################
     # Compute Section
+    # ###########################
+    api.depends("technical_name")
+
+    def _compute_included_in_cron_fetch(self):
+        for folder in self:
+            folder.included_in_cron_fetch = folder.technical_name in [
+                "INBOX",
+                "Junk",
+                "Sent",
+            ]
+
+    @api.depends("last_fetch_date")
+    def _compute_limited_fetch(self):
+        for folder in self:
+            folder.limited_fetch = folder.last_fetch_date
+
+    def _inverse_limited_fetch(self):
+        for folder in self:
+            if folder.limited_fetch:
+                folder.last_fetch_date = date.today()
+            else:
+                folder.last_fetch_date = False
+
     @api.depends("name", "parent_id.name")
     def _compute_complete_name(self):
         for folder in self:
@@ -136,7 +171,6 @@ class WebmailFolder(models.Model):
     def _fetch_mails(self):
         for webmail_folder in self:
             client = webmail_folder.account_id._get_imap_client_connected()
-            _logger.info(f"Fetching Mails for folder {webmail_folder.complete_name}")
             status, select_code = client.select(f'"{webmail_folder.technical_name}"')
             if status != "OK":
                 client.logout()
@@ -155,16 +189,22 @@ class WebmailFolder(models.Model):
             if webmail_folder.last_fetch_date:
                 fetch_date = webmail_folder.last_fetch_date + relativedelta(days=-1)
                 domain = str(imap_tools.AND(date_gte=fetch_date))
-                _logger.info(f"Since {fetch_date} ...")
+                _logger.info(
+                    f"Fetching Mails for folder '{webmail_folder.complete_name}'"
+                    f" Since {fetch_date} ..."
+                )
             else:
                 domain = "ALL"
-                _logger.info("All Mails ...")
+                _logger.info(
+                    f"Fetching ALL mails for folder {webmail_folder.complete_name} ..."
+                )
             status, search_result = client.search(None, domain)
             num_list = search_result[0].split()
-            for num in num_list:
+            for index, num in enumerate(num_list, start=1):
                 _logger.info(
-                    f" {num.decode()}/{len(num_list)}:"
-                    f" Get Mail in {webmail_folder.complete_name}."
+                    f" {index}/{len(num_list)}:"
+                    f" Get Mail #{num.decode()} in folder"
+                    f" '{webmail_folder.complete_name}'."
                 )
                 status, mail_data = client.fetch(num, "(RFC822)")
                 email_message = email.message_from_bytes(

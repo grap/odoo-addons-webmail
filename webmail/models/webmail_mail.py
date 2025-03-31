@@ -289,7 +289,7 @@ class WebmailMail(models.Model):
             raise UserError(
                 _("Unable to erase mail in many imap accounts in the same time.")
             )
-        client = self.mapped("account_id")[0]._get_imap_client_connected()
+        client = self.mapped("account_id")._get_imap_client_connected()
         for mail in self:
             client.select(mail.folder_id.technical_name)
             res = client.search(None, f'(HEADER Message-ID "{mail.identifier}")')

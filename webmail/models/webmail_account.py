@@ -155,10 +155,10 @@ class WebmailAccount(models.Model):
 
     @api.model
     def _fetch_mail_by_cron(self, account_ids):
-        accounts = self.browse(account_ids)
-        for account in accounts:
-            account._fetch_folders()
-            account.mapped("folder_ids")._fetch_mails()
+        for account in self.browse(account_ids):
+            account.mapped("folder_ids").filtered(
+                lambda x: x.included_in_cron_fetch
+            )._fetch_mails()
 
     def _prepare_cron(self):
         self.ensure_one()

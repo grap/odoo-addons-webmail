@@ -31,6 +31,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="account_id" optional="show"/>
                 <field name="mail_qty" />
                 <field name="last_fetch_date" />
+                <field name="limited_fetch" widget="boolean_toggle" />
                     <button
                     string="Fetch Mails"
                     type="object"
@@ -69,6 +70,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                             <field name="parent_id" />
                             <field name="technical_name" />
                             <field name="account_id" />
+                            <field name="limited_fetch" widget="boolean_toggle" />
                         </group>
                         <group />
                     </group>
