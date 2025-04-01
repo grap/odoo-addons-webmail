@@ -41,12 +41,15 @@ class FakeIMAPClient:
         return ("OK", [(b"2 (RFC822 {3335}", mail_data_1)])
 
     def store(self, arg1, arg2, arg3):
+        # TODO: Check if reality
         return ("OK", [b"1"])
 
     def expunge(self):
+        # TODO: Check if reality
         return ("OK", [b"1"])
 
     def append(self, arg1, arg2, arg3, arg4):
+        # TODO: Check if reality
         return ("OK", [b"1"])
 
 
