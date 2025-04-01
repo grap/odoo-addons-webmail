@@ -32,8 +32,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <header>
                     <button name="button_merge"
                         type="object"
-                        string="Merge"
-                        class="btn-warning"
+                        string=" Merge"
+                        class="btn-warning fa fa-compress"
                         confirm="Are you sure you want to merge those conversations ?"/>
                     <button name="unlink"
                         type="object"
@@ -45,12 +45,12 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <button name="action_archive" string=" Archive" class="btn-secondary oi oi-archive" type="object"/>
                     <button name="button_mark_as_read"
                         type="object"
-                        string="Read"
-                        class="btn-secondary"/>
+                        string=" Read"
+                        class="btn-secondary fa fa-envelope-o"/>
                     <button name="button_mark_as_unread"
                         type="object"
-                        string="Unread"
-                        class="btn-secondary"/>
+                        string=" Unread"
+                        class="btn-secondary fa fa-envelope"/>
                 </header>
 
                 <field name="author_ids" widget="many2many_avatar_user"/>
