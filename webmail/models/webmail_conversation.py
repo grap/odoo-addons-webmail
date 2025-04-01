@@ -215,30 +215,48 @@ class WebmailConversation(models.Model):
         self._merge()
 
     def button_write_message(self):
-        default_subject = False
-        last_to_contacts = False
-        last_cc_contacts = False
-        if self.mail_qty:
-            last_mail = self.mail_ids[0]
-            last_to_contacts = (
-                last_mail.author_contact_id | last_mail.to_contact_ids
-            ).filtered(lambda x: x.email != self.account_id.login)
-            last_cc_contacts = (last_mail.cc_contact_ids).filtered(
-                lambda x: x.email != self.account_id.login
-            )
-            default_subject = last_mail.subject
-            if not default_subject.lower().startswith("re: "):
-                default_subject = f"Re: {default_subject}"
         self.write(
             {
                 "draft_message": True,
-                "to_contact_ids": last_to_contacts
-                and [Command.set(last_to_contacts.ids)]
-                or [],
-                "cc_contact_ids": last_cc_contacts
-                and [Command.set(last_cc_contacts.ids)]
-                or [],
+                "to_contact_ids": [],
+                "cc_contact_ids": [],
+                "message_subject": "",
+            }
+        )
+
+    def button_answer_single(self):
+        default_subject = False
+        last_mail = self.mail_ids[0]
+        if last_mail.author_contact_id.email != self.account_id.login:
+            # Answer to a user that wrote a mail
+            to_contacts = last_mail.author_contact_id
+        else:
+            # Send again mail to same people
+            to_contacts = last_mail.to_contact_ids
+        default_subject = last_mail.subject
+        if not default_subject.lower().startswith("re: "):
+            default_subject = f"Re: {default_subject}"
+        self.write(
+            {
+                "draft_message": True,
+                "to_contact_ids": [Command.set(to_contacts.ids)],
+                "cc_contact_ids": [],
                 "message_subject": default_subject,
+            }
+        )
+
+    def button_answer_multi(self):
+        self.button_answer_single()
+        last_mail = self.mail_ids[0]
+        cc_contacts = last_mail.to_contact_ids | last_mail.cc_contact_ids
+        cc_contact_ids = [
+            x.id
+            for x in cc_contacts
+            if x.email != self.account_id.login and x.id not in self.to_contact_ids.ids
+        ]
+        self.write(
+            {
+                "cc_contact_ids": [Command.set(cc_contact_ids)],
             }
         )
 

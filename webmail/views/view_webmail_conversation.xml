@@ -32,7 +32,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <header>
                     <button name="button_merge"
                         type="object"
-                        string=" Merge"
+                        data-hotkey="m"
+                        string=" Merge (M)"
                         class="btn-warning fa fa-compress"
                         confirm="Are you sure you want to merge those conversations ?"/>
                     <button name="unlink"
@@ -42,8 +43,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         data-hotkey="e"
                         context="{'erase_mail': True}"
                         confirm="Are you sure you want to drop the mail(s) on the server ?"/>
-                    <button name="action_archive" string=" Archive" class="btn-secondary oi oi-archive" type="object"/>
+                    <button name="action_archive"
+                        data-hotkey="z"
+                        string=" Archive (Z)" class="btn-secondary oi oi-archive" type="object"/>
                     <button name="button_mark_as_read"
+
                         type="object"
                         string=" Read"
                         class="btn-secondary fa fa-envelope-o"/>
@@ -63,6 +67,12 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="has_been_read" optional="hide" widget="boolean_toggle" string="Read"/>
                 <field name="active" optional="hide" widget="boolean_toggle" />
                 <button name="action_archive" string=" Archive" type="object" class="oi oi-archive"/>
+                <button name="unlink"
+                    type="object"
+                    string=" Erase"
+                    class="fa fa-trash"
+                    context="{'erase_mail': True}"
+                    confirm="Are you sure you want to drop the mail(s) on the server ?"/>
             </list>
         </field>
     </record>
@@ -72,15 +82,23 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="button_write_message" data-hotkey="w" string=" Write Message (W)" class="btn-primary fa fa-pencil-square-o" type="object" invisible="draft_message == True"/>
-                    <button name="button_send_message" data-hotkey="s" string=" Send Message (S)" class="btn-success fa fa-paper-plane" type="object" invisible="draft_message == False"/>
-                    <button name="button_drop_draft_message" data-hotkey="d" string=" Drop Draft Message (D)" class="btn-warning fa fa-undo" type="object" invisible="draft_message == False or mail_qty == 0" confirm="Are you sure to delete your draft message"/>
+                    <button name="action_archive" data-hotkey="z" string=" Archive (Z)" class="btn-secondary oi oi-archive" type="object" invisible="not active or mail_qty == 0 or draft_message == True"/>
+                    <button name="action_unarchive" data-hotkey="z" string=" Unarchive (Z)" class="btn-secondary oi oi-unarchive" type="object" invisible="active or draft_message == True"/>
+
                     <button name="unlink" data-hotkey="e" string=" Erase (E)" class="btn-danger fa fa-trash" type="object"
                         context="{'erase_mail': True}"
                         invisible="mail_qty == 0 or draft_message == True"
                         confirm="Are you sure you want to drop the mail(s) on the server ?"/>
-                    <button name="action_archive" string=" Archive" class="btn-secondary oi oi-archive" type="object" invisible="not active or mail_qty == 0 or draft_message == True"/>
-                    <button name="action_unarchive" string=" Unarchive" class="btn-secondary oi oi-unarchive" type="object" invisible="active or draft_message == True"/>
+
+                    <button name="button_write_message" data-hotkey="w" string=" Write Message (W)" class="btn-primary fa fa-pencil-square-o" type="object" invisible="draft_message == True or mail_qty != 0"/>
+
+                    <button name="button_answer_single" data-hotkey="r" string=" Answer (R)" class="btn-primary fa fa-user" type="object" invisible="draft_message == True or mail_qty == 0"/>
+
+                    <button name="button_answer_multi" data-hotkey="a" string=" Answer to All (A)" class="btn-primary fa fa-users" type="object" invisible="draft_message == True or mail_qty == 0"/>
+
+                    <button name="button_drop_draft_message" data-hotkey="d" string=" Drop Draft Message (D)" class="btn-warning fa fa-undo" type="object" invisible="draft_message == False or mail_qty == 0" confirm="Are you sure to delete your draft message"/>
+
+                    <button name="button_send_message" data-hotkey="s" string=" Send Message (S)" class="btn-success fa fa-paper-plane" type="object" invisible="draft_message == False"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -107,6 +125,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         <field name="message_body"  nolabel="1" style="border: 1px solid; min-height:200px;" />
                     </group>
                     <group invisible="draft_message == True">
+                        <h1><field name="subject"/></h1>
                         <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                     </group>
                     <field name="mail_ids">
