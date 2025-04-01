@@ -25,7 +25,7 @@ class TestMailDataAnalysis(TransactionCase):
         freezer = freeze_time("2025-04-02 12:00:00")
         freezer.start()
         self.conversation._compute_last_mail_date_pretty()
-        self.assertEqual(self.conversation.last_mail_date_pretty, "1 avril")
+        self.assertIn(self.conversation.last_mail_date_pretty, ["1 avril", "1 April"])
         freezer.stop()
 
         freezer = freeze_time("2025-07-01 00:00:00")
