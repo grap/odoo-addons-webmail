@@ -111,9 +111,31 @@ class WebmailMail(models.Model):
 
     contact_qty = fields.Integer(compute="_compute_contact_qty", store=True)
 
+    attachment_ids = fields.One2many(
+        comodel_name="ir.attachment",
+        inverse_name="res_id",
+        domain=[("res_model", "=", "webmail.mail")],
+        string="Attachments",
+    )
+
+    nb_attachment = fields.Integer(
+        string="Number of Attachments", compute="_compute_nb_attachment"
+    )
+
     # #######################
     # Compute Section
     # #######################
+
+    def _compute_nb_attachment(self):
+        attachment_data = self.env["ir.attachment"]._read_group(
+            [("res_model", "=", "webmail.mail"), ("res_id", "in", self.ids)],
+            ["res_id"],
+            ["__count"],
+        )
+        attachment = dict(attachment_data)
+        for mail in self:
+            mail.nb_attachment = attachment.get(mail._origin.id, 0)
+
     @api.depends("conversation_id.mail_ids")
     def _compute_counter_text(self):
         for mail in self:

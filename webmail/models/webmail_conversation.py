@@ -16,8 +16,10 @@ from .tools import clean_subject
 _logger = logging.getLogger(__name__)
 
 
+# "mail.thread",
 class WebmailConversation(models.Model):
     _name = "webmail.conversation"
+    _inherit = ["mail.thread.main.attachment"]
     _description = "Webmail Conversation"
     _rec_name = "subject"
     _order = "last_mail_date desc, subject"
@@ -71,7 +73,16 @@ class WebmailConversation(models.Model):
 
     message_body = fields.Html()
 
-    message_attachment_ids = fields.Many2many(comodel_name="ir.attachment")
+    message_attachment_ids = fields.One2many(
+        comodel_name="ir.attachment",
+        inverse_name="res_id",
+        domain=[("res_model", "=", "webmail.conversation")],
+        string="Attachments",
+    )
+
+    message_nb_attachment = fields.Integer(
+        string="Number of Attachments", compute="_compute_message_nb_attachment"
+    )
 
     has_been_read = fields.Boolean(
         compute="_compute_has_been_read", store=True, inverse="_inverse_has_been_read"
@@ -93,6 +104,9 @@ class WebmailConversation(models.Model):
         help="Technical field, use to mark the conversation as read.",
     )
 
+    # ###########################
+    # Default Section
+    # ###########################
     def _default_account_id(self):
         accounts = self.env["webmail.account"].search([])
         if len(accounts) == 1:
@@ -116,6 +130,18 @@ class WebmailConversation(models.Model):
     # ###########################
     # Compute & Inverse Section
     # ###########################
+    def _compute_message_nb_attachment(self):
+        attachment_data = self.env["ir.attachment"]._read_group(
+            [("res_model", "=", "webmail.conversation"), ("res_id", "in", self.ids)],
+            ["res_id"],
+            ["__count"],
+        )
+        attachment = dict(attachment_data)
+        for conversation in self:
+            conversation.message_nb_attachment = attachment.get(
+                conversation._origin.id, 0
+            )
+
     def _compute_read_me(self):
         # Fake compute section
         # the field read me is computed only when conversation
@@ -298,6 +324,12 @@ class WebmailConversation(models.Model):
             conversation._send_message()
             conversation.button_drop_draft_message()
 
+    def attach_document(self, **kwargs):
+        """Code comes from hr.expense model"""
+        self._message_set_main_attachment_id(
+            self.env["ir.attachment"].browse(kwargs["attachment_ids"][-1:]), force=True
+        )
+
     def action_view_mails(self):
         mails = self.mapped("mail_ids")
         action = self.env["ir.actions.actions"]._for_xml_id(
@@ -353,6 +385,14 @@ class WebmailConversation(models.Model):
         if not tools.html2plaintext(self.message_body):
             raise UserError(_("The field 'Body' is required to send an email."))
 
+        attachments = [
+            (a["name"], a["raw"], a["mimetype"])
+            for a in self.message_attachment_ids.sudo().read(
+                ["name", "raw", "mimetype"]
+            )
+            if a["raw"] is not False
+        ]
+
         IrMailServer = self.env["ir.mail_server"]
         msg = IrMailServer.build_email(
             email_from=self.account_id.login,
@@ -360,8 +400,7 @@ class WebmailConversation(models.Model):
             email_cc=self.mapped("cc_contact_ids.formatted_address"),
             subject=self.message_subject,
             body=self.message_body,
-            # FIXME: TODO
-            # attachments=email['attachments'],
+            attachments=attachments,
             subtype="html",
         )
         if self.mail_qty:

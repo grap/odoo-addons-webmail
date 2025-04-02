@@ -57,3 +57,12 @@
 .odoo-editor-editable {
   min-height:200px;
 }
+
+
+.attachment_inline ul li{
+  margin: 5px;
+  float:left;
+}
+.attachment_inline ul li .flex-shrink-0{
+  display:none;
+}
