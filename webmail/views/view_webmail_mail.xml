@@ -40,6 +40,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="subject" />
                 <field name="origin_mail_id" optional="hide" />
                 <field name="folder_id" optional="hide" />
+                <field name="contact_qty" optional="hide" />
             </list>
         </field>
     </record>

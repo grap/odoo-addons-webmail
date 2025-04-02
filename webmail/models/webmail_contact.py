@@ -12,6 +12,7 @@ class WebmailContact(models.Model):
     _name = "webmail.contact"
     _inherit = ["avatar.mixin"]
     _order = "name"
+    _rec_name = "formatted_address"
 
     _description = "Webmail Contacts"
 

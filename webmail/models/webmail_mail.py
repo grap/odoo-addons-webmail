@@ -83,9 +83,10 @@ class WebmailMail(models.Model):
     to_contact_ids = fields.Many2many(
         relation="webmail_contact_webmail_mail_to_rel",
         comodel_name="webmail.contact",
-        compute="_compute_to_contact_ids",
+        compute="_compute_to_contacts",
         store=True,
     )
+    to_contact_qty = fields.Integer(compute="_compute_to_contacts", store=True)
 
     cc_contact_ids = fields.Many2many(
         relation="webmail_contact_webmail_mail_cc_rel",
@@ -108,6 +109,8 @@ class WebmailMail(models.Model):
 
     counter_text = fields.Char(compute="_compute_counter_text")
 
+    contact_qty = fields.Integer(compute="_compute_contact_qty", store=True)
+
     # #######################
     # Compute Section
     # #######################
@@ -126,12 +129,13 @@ class WebmailMail(models.Model):
             )
 
     @api.depends("to_text")
-    def _compute_to_contact_ids(self):
+    def _compute_to_contacts(self):
         for mail in self.filtered(lambda x: x.to_text):
             contacts = self.env["webmail.contact"]
             for string in email_split_and_format(mail.to_text):
                 contacts |= self.env["webmail.contact"]._get_or_create(string)
             mail.to_contact_ids = [Command.set(contacts.ids)]
+            mail.to_contact_qty = len(mail.to_contact_ids)
 
     @api.depends("cc_text")
     def _compute_cc_contacts(self):
@@ -141,6 +145,19 @@ class WebmailMail(models.Model):
                 contacts |= self.env["webmail.contact"]._get_or_create(string)
             mail.cc_contact_ids = [Command.set(contacts.ids)]
             mail.cc_contact_qty = len(mail.cc_contact_ids)
+
+    @api.depends("author_contact_id", "to_contact_ids", "cc_contact_ids")
+    def _compute_contact_qty(self):
+        for mail in self:
+            mail.contact_qty = len(
+                set(
+                    (
+                        mail.author_contact_id
+                        | mail.to_contact_ids
+                        | mail.cc_contact_ids
+                    ).ids
+                )
+            )
 
     @api.depends("reply_identifier")
     def _compute_origin_mail_id(self):
@@ -207,8 +224,19 @@ class WebmailMail(models.Model):
 
     @api.ondelete(at_uninstall=False)
     def _on_delete(self):
+        original_contacts = (
+            self.mapped("author_contact_id")
+            | self.mapped("cc_contact_ids")
+            | self.mapped("to_contact_ids")
+        )
         if self.env.context.get("erase_mail"):
             self._erase_mail()
+        to_delete_contacts = original_contacts.filtered(
+            lambda x: x.author_mail_qty == 0
+        )
+        if to_delete_contacts:
+            _logger.info(f"Deleting {len(to_delete_contacts)} unused contacts ...")
+            to_delete_contacts.unlink()
 
     # #######################
     # Private Section

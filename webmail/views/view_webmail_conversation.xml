@@ -12,6 +12,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
             <search>
                 <field name="subject" />
                 <field name="author_ids" />
+                <field name="contact_ids"/>
                 <field name="tag_ids" />
                 <filter string="Authors" name="group_by_author_ids" context="{'group_by': 'author_ids'}"/>
                 <filter string="Tags" name="group_by_tag_ids" context="{'group_by': 'tag_ids'}"/>

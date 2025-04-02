@@ -55,6 +55,14 @@ class WebmailConversation(models.Model):
         store=True,
     )
 
+    contact_ids = fields.Many2many(
+        string="Interlocutors",
+        comodel_name="webmail.contact",
+        compute="_compute_contact_ids",
+        relation="webmail_conversation_contact_contact_rel",
+        store=True,
+    )
+
     content = fields.Html("Contents", compute="_compute_content")
 
     draft_message = fields.Boolean(readonly=True, default=True)
@@ -150,6 +158,19 @@ class WebmailConversation(models.Model):
     def _compute_author_ids(self):
         for conversation in self:
             conversation.author_ids = conversation.mapped("mail_ids.author_contact_id")
+
+    @api.depends(
+        "mail_ids.author_contact_id",
+        "mail_ids.to_contact_ids",
+        "mail_ids.cc_contact_ids",
+    )
+    def _compute_contact_ids(self):
+        for conversation in self:
+            conversation.contact_ids = (
+                conversation.mapped("mail_ids.author_contact_id")
+                | conversation.mapped("mail_ids.to_contact_ids")
+                | conversation.mapped("mail_ids.cc_contact_ids")
+            )
 
     @api.depends("last_mail_date")
     def _compute_last_mail_date_pretty(self):
