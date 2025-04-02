@@ -128,9 +128,10 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         <field name="cc_contact_ids" widget="many2many_tags" string="Cc" context="{'active_test': True}"/>
                         <field name="message_subject" string="Subject" />
                         <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
-                        <field name="message_body"  nolabel="1" style="border: 1px solid; min-height:200px;" />
                         <field name="message_attachment_ids" widget="mail_composer_attachment_list" invisible="message_nb_attachment == 0"/>
                         <field name="message_nb_attachment" invisible="1"/>
+                        <field name="message_body"  nolabel="1" style="border: 1px solid; min-height:200px;" />
+
 
                     </group>
                     <!-- ===================== -->
