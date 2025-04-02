@@ -114,7 +114,7 @@ class WebmailMail(models.Model):
     attachment_ids = fields.One2many(
         comodel_name="ir.attachment",
         inverse_name="res_id",
-        domain=[("res_model", "=", "webmail.mail")],
+        domain=[("res_model", "=", "webmail.mail"), ("access_token", "=", False)],
         string="Attachments",
     )
 
