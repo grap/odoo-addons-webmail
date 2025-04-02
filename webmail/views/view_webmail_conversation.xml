@@ -116,6 +116,9 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
                     <field name="read_me" invisible="1"/>
                     <field name="active" invisible="1"/>
+                    <!-- ===================== -->
+                    <!-- Compose Mode Enabled  -->
+                    <!-- ===================== -->
                     <group invisible="draft_message == False">
                         <field name="draft_message" invisible="1"/>
                         <field name="account_id" invisible="mail_qty != 0" options="{'no_create': True}" string="From"/>
@@ -124,7 +127,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                         <field name="message_subject" string="Subject" />
                         <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                         <field name="message_body"  nolabel="1" style="border: 1px solid; min-height:200px;" />
+                        <field name="message_attachment_ids" widget="mail_composer_attachment_list"/>
                     </group>
+                    <!-- ===================== -->
+                    <!-- Compose Mode Disabled -->
+                    <!-- ===================== -->
                     <group invisible="draft_message == True">
                         <h1><field name="subject"/></h1>
                         <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>

@@ -71,6 +71,8 @@ class WebmailConversation(models.Model):
 
     message_body = fields.Html()
 
+    message_attachment_ids = fields.Many2many(comodel_name="ir.attachment")
+
     has_been_read = fields.Boolean(
         compute="_compute_has_been_read", store=True, inverse="_inverse_has_been_read"
     )
