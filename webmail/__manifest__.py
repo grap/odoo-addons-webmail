@@ -13,7 +13,6 @@
     "depends": [
         "mail",
         # OCA
-        "queue_job",
         "web_notify",
     ],
     "external_dependencies": {"python": ["imapclient", "beautifulsoup4", "imap-tools"]},
