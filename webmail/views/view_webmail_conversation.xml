@@ -101,7 +101,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
                     <widget name="attach_document" string="Attach Receipt" action="attach_document" invisible="draft_message == False"/>
 
-                    <button name="button_send_message" data-hotkey="s" string=" Send Message (S)" class="btn-success fa fa-paper-plane" type="object" invisible="draft_message == False"/>
+                    <button name="button_send_message" data-hotkey="Enter" string=" Send Message (S)" class="btn-success fa fa-paper-plane" type="object" invisible="draft_message == False"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">

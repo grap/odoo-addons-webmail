@@ -349,13 +349,12 @@ class WebmailMail(models.Model):
             if num:
                 client.store(num, "+FLAGS", "\\Deleted")
             else:
-                mail.account_id.user_id.notify_danger(
-                    _(
-                        f"Mail {mail.subject}. ({mail.identifier}"
-                        f" not found in the folder {mail.folder_id.complete_name})"
-                    ),
-                    sticky=True,
+                message = _(
+                    f"Mail {mail.subject}. ({mail.identifier}"
+                    f" not found in the folder {mail.folder_id.complete_name})"
                 )
+                _logger.error(message)
+                mail.account_id.user_id.notify_danger(message, sticky=True)
         client.expunge()
         client.close()
         client.logout()
