@@ -35,3 +35,7 @@ def decode_imap4_utf7(s: str) -> str:
         else:
             r.append(s)
     return "".join(r)
+
+
+def clean_subject(subject):
+    return re.sub(r"(((RE)|(Re)|(Fwd)|(TR)): )+", "", subject)

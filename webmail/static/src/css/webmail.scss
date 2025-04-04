@@ -1,0 +1,68 @@
+.hide_reply_and_author blockquote {
+    display: none;
+}
+
+.hide_reply_and_author div[data-o-mail-quote="1"] {
+  color: gray !important;
+}
+
+.hide_reply_and_author span[data-o-mail-quote="1"] {
+  color: gray !important;
+}
+
+.hide_reply_and_author pre {
+    border: unset;
+    background-color: unset;
+}
+
+.kanban_mail_full_screen{
+  width: 100% !important;
+}
+
+
+
+
+.kanban_mail_inline{
+  padding-left: 3px;
+}
+
+.kanban_mail_inline_field{
+  font-weight: bold;
+}
+
+.kanban_mail_inline_counter {
+  float:left;
+  font-weight: bold;
+  font-size:16px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.kanban_mail_inline_static{
+  color: gray !important;
+}
+
+.o_list_renderer div.o_boolean_toggle .form-check-input{
+  height:20px;
+}
+
+.mail_header_content {
+  padding: 0px;
+  background-color: #FFD;
+  height: 50px;
+  line-height: 50px;
+  border: 1px solid lightgray;
+}
+
+.odoo-editor-editable {
+  min-height:200px;
+}
+
+
+.attachment_inline ul li{
+  margin: 5px;
+  float:left;
+}
+.attachment_inline ul li .flex-shrink-0{
+  display:none;
+}

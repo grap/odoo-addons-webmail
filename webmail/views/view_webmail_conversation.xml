@@ -11,6 +11,14 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <search>
                 <field name="subject" />
+                <field name="author_ids" />
+                <field name="contact_ids"/>
+                <field name="tag_ids" />
+                <filter string="Authors" name="group_by_author_ids" context="{'group_by': 'author_ids'}"/>
+                <filter string="Tags" name="group_by_tag_ids" context="{'group_by': 'tag_ids'}"/>
+                <filter string="Subjects" name="group_by_subject" context="{'group_by': 'subject'}"/>
+                <filter name="filter_active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="filter_unactive" string="Archived" domain="[('active','=',False)]"/>
             </search>
         </field>
     </record>
@@ -18,9 +26,54 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
     <record id="view_webmail_conversation_list" model="ir.ui.view">
         <field name="model">webmail.conversation</field>
         <field name="arch" type="xml">
-            <list>
-                <field name="subject" />
-                <field name="mail_qty" />
+            <list decoration-bf="has_been_read == False"
+                multi_edit="1"
+                decoration-info="draft_message == True"
+                decoration-it="draft_message == True">
+                <header>
+                    <button name="button_merge"
+                        type="object"
+                        data-hotkey="m"
+                        string=" Merge"
+                        class="btn-warning fa fa-compress"
+                        confirm="Are you sure you want to merge those conversations ?"/>
+                    <button name="unlink"
+                        type="object"
+                        string=" Erase"
+                        class="btn-danger fa fa-trash"
+                        data-hotkey="Delete"
+                        context="{'erase_mail': True}"
+                        confirm="Are you sure you want to drop the mail(s) on the server ?"/>
+                    <button name="action_archive"
+                        data-hotkey="z"
+                        string=" Archive" class="btn-secondary oi oi-archive" type="object"/>
+                    <button name="button_mark_as_read"
+
+                        type="object"
+                        string=" Read"
+                        class="btn-secondary fa fa-envelope-o"/>
+                    <button name="button_mark_as_unread"
+                        type="object"
+                        string=" Unread"
+                        class="btn-secondary fa fa-envelope"/>
+                </header>
+
+                <field name="author_ids" widget="many2many_avatar_user"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
+                <field name="mail_qty" string="" invisible="mail_qty == 1"/>
+                <field name="subject"/>
+                <field name="last_mail_date_pretty" string="Date"/>
+                <field name="first_mail_date" optional="hide"/>
+                <field name="last_mail_date" optional="hide"/>
+                <field name="has_been_read" optional="hide" widget="boolean_toggle" string="Read"/>
+                <field name="active" optional="hide" widget="boolean_toggle" />
+                <button name="action_archive" string=" Archive" type="object" class="oi oi-archive"/>
+                <button name="unlink"
+                    type="object"
+                    string=" Erase"
+                    class="fa fa-trash"
+                    context="{'erase_mail': True}"
+                    confirm="Are you sure you want to drop the mail(s) on the server ?"/>
             </list>
         </field>
     </record>
@@ -29,20 +82,106 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="model">webmail.conversation</field>
         <field name="arch" type="xml">
             <form>
-                <header />
+                <header>
+                    <button name="action_archive" data-hotkey="z" string=" Archive" class="btn-secondary oi oi-archive" type="object" invisible="not active or mail_qty == 0 or draft_message == True"/>
+                    <button name="action_unarchive" data-hotkey="z" string=" Unarchive" class="btn-secondary oi oi-unarchive" type="object" invisible="active or draft_message == True"/>
+
+                    <button name="unlink" data-hotkey="Delete" string=" Erase" class="btn-danger fa fa-trash" type="object"
+                        context="{'erase_mail': True}"
+                        invisible="mail_qty == 0 or draft_message == True"
+                        confirm="Are you sure you want to drop the mail(s) on the server ?"/>
+
+                    <button name="button_write_message" data-hotkey="w" string=" Write Message" class="btn-primary fa fa-pencil-square-o" type="object" invisible="draft_message == True or mail_qty != 0"/>
+
+                    <button name="button_answer_single" data-hotkey="r" string=" Answer" class="btn-primary fa fa-user" type="object" invisible="draft_message == True or mail_qty == 0"/>
+
+                    <button name="button_answer_multi" data-hotkey="a" string=" Answer to All" class="btn-primary fa fa-users" type="object" invisible="draft_message == True or mail_qty == 0"/>
+
+                    <button name="button_drop_draft_message" data-hotkey="d" string=" Drop Draft Message" class="btn-warning fa fa-undo" type="object" invisible="draft_message == False or mail_qty == 0" confirm="Are you sure to delete your draft message"/>
+
+                    <widget name="attach_document" string="Attach Receipt" action="attach_document" invisible="draft_message == False"/>
+
+                    <button name="button_send_message" data-hotkey="Enter" string=" Send Message" class="btn-success fa fa-paper-plane" type="object" invisible="draft_message == False"/>
+                </header>
                 <sheet>
-                    <div class="oe_button_box" name="button_box" />
-                    <group>
-                        <field name="mail_ids" nolabel="1">
-                            <list>
-                                <field name="identifier" optional="hide" />
-                                <field name="reply_identifier" optional="hide" />
-                                <field name="date" optional="show" />
-                                <field name="from_text" optional="show" />
-                                <field name="body" widget="html_mail" optional="show" />
-                            </list>
-                        </field>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_mails"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-envelope-o"
+                            invisible="mail_qty == 0"
+                        >
+                            <field name="mail_qty" widget="statinfo" string="Mails" />
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="read_me" invisible="1"/>
+                    <field name="active" invisible="1"/>
+                    <!-- ===================== -->
+                    <!-- Compose Mode Enabled  -->
+                    <!-- ===================== -->
+                    <group invisible="draft_message == False">
+                        <field name="draft_message" invisible="1"/>
+                        <field name="account_id" invisible="mail_qty != 0" options="{'no_create': True}" string="From"/>
+                        <field name="to_contact_ids" widget="many2many_tags" string="To" context="{'active_test': True}"/>
+                        <field name="cc_contact_ids" widget="many2many_tags" string="Cc" context="{'active_test': True}"/>
+                        <field name="message_subject" string="Subject" />
+                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                        <field name="message_attachment_ids" widget="mail_composer_attachment_list" invisible="message_nb_attachment == 0"/>
+                        <field name="message_nb_attachment" invisible="1"/>
+                        <field name="message_body"  nolabel="1" style="border: 1px solid; min-height:200px;" />
+
+
                     </group>
+                    <!-- ===================== -->
+                    <!-- Compose Mode Disabled -->
+                    <!-- ===================== -->
+                    <group invisible="draft_message == True">
+                        <h1><field name="subject"/></h1>
+                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                    </group>
+                    <field name="mail_ids">
+                        <kanban class="o_kanban_mobile">
+                            <field name="author_contact_id"/>
+                            <field name="date"/>
+                            <field name="body"/>
+                            <templates>
+                                <t t-name="card" class="flex-row kanban_mail_full_screen">
+                                    <main class="w-100 ps-2 pt-1">
+                                        <div>
+                                            <div class="mail_header_content" style="float:left;">
+                                                <field name="counter_text" class="kanban_mail_inline_counter"/>
+                                            </div>
+                                            <div class="mail_header_content" style="float:left;">
+                                                <field name="author_avatar_256" widget="image" class="oe_avatar" options="{'preview_image': 'author_avatar_256', 'size': [50, 50]}"/>
+                                            </div>
+                                            <div class="mail_header_content">
+                                                <field name="author_contact_id" class="kanban_mail_inline kanban_mail_inline_field"/>
+                                                <span class="kanban_mail_inline kanban_mail_inline_static">wrote on</span>
+                                                <field name="date" class="kanban_mail_inline kanban_mail_inline_field"/>
+                                                <br />
+                                            </div>
+                                            <div class="mail_header_content">
+                                                <span class="kanban_mail_inline kanban_mail_inline_static" style="float: left; vertical-align: top; line-height: 20px;">To: </span>
+                                                <field name="to_contact_ids" class="kanban_mail_inline_to_fields"/>
+                                            </div>
+                                            <div class="mail_header_content" invisible="cc_contact_qty == 0">
+                                                <span class="kanban_mail_inline kanban_mail_inline_static" style="float: left; vertical-align: top; line-height: 20px;">Cc: </span>
+                                                <field name="cc_contact_ids" class="kanban_mail_inline_cc_fields"/>
+                                                <field name="cc_contact_qty" invisible="1"/>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <field name="body" widget="html_mail" class="hide_reply_and_author" />
+                                            <field name="attachment_ids" widget="mail_composer_attachment_list" class="attachment_inline" readonly="1" invisible="nb_attachment == 0"/>
+                                            <field name="nb_attachment" invisible="1"/>
+                                        </div>
+                                    </main>
+                                </t>
+                            </templates>
+                        </kanban>
+                    </field>
                 </sheet>
             </form>
         </field>
@@ -50,9 +189,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
     <record id="action_webmail_conversation" model="ir.actions.act_window">
         <field name="name">Conversations</field>
+        <field name="path">webmail-conversation</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">webmail.conversation</field>
         <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False, 'search_default_filter_active': True}</field>
     </record>
 
     <menuitem

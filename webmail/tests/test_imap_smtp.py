@@ -6,6 +6,7 @@ from unittest import mock
 
 from markupsafe import Markup
 
+from odoo import Command, api
 from odoo.tests.common import TransactionCase
 
 from .mail_data import mail_data_1
@@ -23,6 +24,7 @@ class FakeIMAPClient:
 
     def list(self):
         return "OK", [
+            b'(\\HasChildren \\UnMarked) "/" Trash',
             b'(\\HasChildren \\UnMarked) "/" Rang&AOk-',
             b'(\\HasNoChildren \\UnMarked) "/" Rang&AOk-/CIE',
             b'(\\HasNoChildren \\UnMarked) "/" Rang&AOk-/Coopaname',
@@ -38,38 +40,56 @@ class FakeIMAPClient:
     def fetch(self, arg1, arg2):
         return ("OK", [(b"2 (RFC822 {3335}", mail_data_1)])
 
+    def store(self, arg1, arg2, arg3):
+        # TODO: Check if reality
+        return ("OK", [b"1"])
 
-class TestWebmailFetchData(TransactionCase):
+    def expunge(self):
+        # TODO: Check if reality
+        return ("OK", [b"1"])
+
+    def append(self, arg1, arg2, arg3, arg4):
+        # TODO: Check if reality
+        return ("OK", [b"1"])
+
+
+class TestImap(TransactionCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
 
         cls.webmail_account = cls.env.ref("webmail.demo_webmail_account")
-        cls.webmail_folder = cls.env.ref("webmail.demo_webmail_folder")
+        cls.webmail_contact = cls.env.ref("webmail.demo_contact_1")
 
-    def test_connexion(self):
+    def test_imap(self):
         with mock.patch("imaplib.IMAP4_SSL", return_value=FakeIMAPClient()):
-            # Check Connexion
+            # #######################
+            # Connexion
             self.webmail_account.button_test_connexion()
-            self.assertEqual(len(self.webmail_account.folder_ids), 1)
+            initial_folder_qty = len(self.webmail_account.folder_ids)
 
-            # Check Fetch Folders
+            # #######################
+            # Fetch Folders
             self.webmail_account.button_fetch_folders()
             folders = self.webmail_account.folder_ids
-            self.assertEqual(len(folders), 5)
-            self.assertIn("Rangé", folders.mapped("technical_name"))
-            self.assertIn("Rangé/CIE", folders.mapped("technical_name"))
-            self.assertIn("Rangé/Coopaname", folders.mapped("technical_name"))
-            self.assertIn("²&é(-è_çà)=^$*ù,;:!<", folders.mapped("technical_name"))
+            self.assertEqual(len(folders), initial_folder_qty + 4)
+            self.assertIn("Rangé", folders.mapped("complete_name"))
+            self.assertIn("Rangé / CIE", folders.mapped("complete_name"))
+            self.assertIn("Rangé / Coopaname", folders.mapped("complete_name"))
+            self.assertIn('"²&é(-è_çà)=^$*ù,;:!<"', folders.mapped("complete_name"))
 
             self.assertIn("Rangé", folders.mapped("name"))
             self.assertIn("CIE", folders.mapped("name"))
             self.assertIn("Coopaname", folders.mapped("name"))
+            self.assertNotIn("Trash", folders.mapped("name"))
 
             cie_folder = self.webmail_account.folder_ids.filtered(
                 lambda x: x.name == "CIE"
             )
             self.assertEqual(len(cie_folder.mail_ids), 0)
+
+            # #######################
+            # Fetch Mails
             cie_folder.button_fetch_mails()
             self.assertEqual(len(cie_folder.mail_ids), 1)
             mail = cie_folder.mail_ids
@@ -93,5 +113,32 @@ class TestWebmailFetchData(TransactionCase):
                 ),
             )
 
-            self.assertEqual(mail.conversation_id.subject, "Test Subject")
-            self.assertEqual(mail.conversation_id.mail_qty, 1)
+            conversation = mail.conversation_id
+            self.assertEqual(conversation.subject, "Test Subject")
+            self.assertEqual(conversation.mail_qty, 1)
+
+            @api.model
+            def send_email(self, message, *args, **kwargs):
+                return True
+
+            self.patch(self.registry["ir.mail_server"], "send_email", send_email)
+            conversation.write(
+                {
+                    "draft_message": True,
+                    "message_subject": "Re!",
+                    "to_contact_ids": [Command.set(self.webmail_contact.ids)],
+                    "message_body": "<div>OK !!!!</div>",
+                }
+            )
+
+            conversation.button_send_message()
+            self.assertFalse(conversation.draft_message)
+
+            # #######################
+            # Erase Mail
+            conversation.with_context(erase_mail=True).unlink()
+            self.assertEqual(
+                len(cie_folder.mail_ids),
+                0,
+                "Unlink converation should unlink related mails",
+            )

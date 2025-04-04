@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Copyright (C) 2025 - Today GRAP (http://www.grap.coop)
+    @author Sylvain LE GAL
+    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+-->
+<odoo>
+
+    <record id="provider_ouvaton" model="webmail.provider">
+        <field name="image_1920" type="base64" file="webmail/static/img/provider_ouvaton.png"/>
+        <field name="name">Ouvaton</field>
+        <field name="imap_url">imap.ouvaton.coop</field>
+        <field name="documentation_url">https://ouvaton.coop/configurer-son-logiciel-de-messagerie/</field>
+        <field name="smtp_url">smtp.ouvaton.coop</field>
+    </record>
+
+    <record id="provider_galae" model="webmail.provider">
+        <field name="image_1920" type="base64" file="webmail/static/img/provider_galae.png"/>
+        <field name="name">Galae</field>
+        <field name="imap_url">mail.galae.net</field>
+        <field name="documentation_url">https://public-community.galae.net/ui/workspaces/3/contents/html-document/1318</field>
+    </record>
+
+    <record id="provider_gandi" model="webmail.provider">
+        <field name="image_1920" type="base64" file="webmail/static/img/provider_gandi.png"/>
+        <field name="name">Gandi</field>
+        <field name="imap_url">mail.gandi.net</field>
+        <field name="documentation_url">https://docs.gandi.net/fr/gandimail/configuration_messagerie/index.html</field>
+    </record>
+
+</odoo>
