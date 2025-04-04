@@ -48,7 +48,7 @@ class WebmailContact(models.Model):
 
     @api.depends("email", "name")
     def _compute_formatted_address(self):
-        for contact in self:
+        for contact in self.filtered(lambda x: x.email):
             contact.formatted_address = formataddr((contact.name, contact.email))
 
     # ###########################
