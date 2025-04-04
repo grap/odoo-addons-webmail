@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    Copyright (C) 2025 - Today GRAP (http://www.grap.coop)
+    @author my-name LE GAL
+    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+-->
+<odoo>
+    <record id="demo_webmail_mail_1" model="webmail.mail">
+        <field name="identifier">59fd-67eb1300-5-33889840@235892895</field>
+        <field name="folder_id" ref="webmail.demo_folder_inbox" />
+        <field name="date">2025-04-01</field>
+        <field name="subject">Hey ! How are you ?</field>
+        <field name="from_text">"My Name (My Company)" &lt;my-name@my-company.fr&gt;</field>
+        <field name="data"><![CDATA[
+X-Mozilla-Status: 0001
+X-Mozilla-Status2: 00000000
+Return-Path: <my-name@my-company.fr>
+Delivered-To: login@domain.tld
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [w1.x1.y1.z1])
+    by spool.mail.gandi.net (Postfix) with ESMTPS id 1234567890X
+    for <login@domain.tld>; Mon, 31 Mar 2025 22:10:22 +0000 (UTC)
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [w2.x2.y2.z2])
+    by smtpout-03.galae.net (Postfix) with ESMTPS id 1234567890XY
+    for <login@domain.tld>; Mon, 31 Mar 2025 22:10:21 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [w3.x3.y3.z3])
+    by smtpout-01.galae.net (Postfix) with ESMTPS id 123456789X
+    for <login@domain.tld>; Mon, 31 Mar 2025 22:10:21 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPA id 459191C22A284
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPA id 1234567890XYZ
+    for <login@domain.tld>; Tue,  1 Apr 2025 00:10:19 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=my-company.fr; s=dkim;
+    t=1743459021; h=from:subject:date:message-id:to:mime-version:content-type;
+    bh=bhbhbhbhbhbbhbhbhbbhbhbhbhbhbhbhb=;
+    b=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb==
+From: "My Name (My Company)" <my-name@my-company.fr>
+To: login@domain.tld
+User-Agent: SOGoMail 5.10.0
+MIME-Version: 1.0
+Date: Tue, 01 Apr 2025 00:10:19 +0200
+Subject: Hey ! How are you =?utf-8?q?=3F?=
+Message-ID: 59fd-67eb1300-5-33889840@235892895
+Content-Type: multipart/alternative; boundary="----=_=-_OpenGroupware_org_NGMime-23037-1743459019.319462-5------"
+X-Last-TLS-Session-Version: None
+Authentication-Results: spool.mail.gandi.net;
+    dkim=pass header.d=my-company.fr header.s=dkim header.b=shn5LgDv;
+    dmarc=pass (policy=reject) header.from=my-company.fr;
+    spf=pass (spool.mail.gandi.net: domain of my-name@my-company.fr designates w6.x6.y6.z6 as permitted sender) smtp.mailfrom=my-name@my-company.fr
+
+------=_=-_OpenGroupware_org_NGMime-23037-1743459019.319462-5------
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-Length: 105
+
+
+Hi,
+
+I haven't heard from you in a long time. I hope you're well.
+
+See you soon!
+
+--
+Author of the email
+
+------=_=-_OpenGroupware_org_NGMime-23037-1743459019.319462-5------
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-Length: 158
+
+<html>Hi,<br /><br />I haven't heard from you in a long time. I hope yo=
+u're well.<br /><br />See you soon!<br /><br />--<br />Author of the em=
+ail</html>
+
+------=_=-_OpenGroupware_org_NGMime-23037-1743459019.319462-5--------
+
+]]></field>
+    </record>
+
+
+    <record id="demo_webmail_mail_2" model="webmail.mail">
+        <field name="identifier">2d22039f-ac7a-4481-a100-c2277aeb85c8@grap.coop</field>
+        <field name="reply_identifier">59fd-67eb1300-5-33889840@235892895</field>
+        <field name="folder_id" ref="webmail.demo_folder_sent" />
+        <field name="date">2025-04-01</field>
+        <field name="subject">Re: Hey ! How are you ?</field>
+        <field name="from_text">"My LOGIN" &lt;login@domain.tld&gt;</field>
+        <field name="data"><![CDATA[
+
+Message-ID: <2d22039f-ac7a-4481-a100-c2277aeb85c8@grap.coop>
+Date: Tue, 1 Apr 2025 00:42:49 +0200
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: Hey ! How are you ?
+To: "My Name (My Company)" <my-name@my-company.fr>
+References: <59fd-67eb1300-5-33889840@235892895>
+Content-Language: fr
+From: "My LOGIN" <login@domain.tld>
+In-Reply-To: <59fd-67eb1300-5-33889840@235892895>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Hi,
+
+All Is OK !
+
+Le 01/04/2025 Ã  00:10, My Name (My Company) a Ã©critÂ :
+> Hi,
+>
+> I haven't heard from you in a long time. I hope you're well.
+>
+> See you soon!
+>
+> --
+> Author of the email
+]]></field>
+    </record>
+
+</odoo>

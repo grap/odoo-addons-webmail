@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+Copyright (C) 2023 - Today: OaaFS
+@author: Sylvain LE GAL (https://twitter.com/legalsylvain)
+License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+-->
+<odoo>
+
+    <record id="view_webmail_contact_search" model="ir.ui.view">
+        <field name="model">webmail.contact</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" />
+                <field name="email" />
+                <filter name="filter_active" string="Active" domain="[('active','=',True)]"/>
+                <filter name="filter_unactive" string="Archived" domain="[('active','=',False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_webmail_contact_list" model="ir.ui.view">
+        <field name="model">webmail.contact</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" decoration-muted="active == False">
+                <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_128', 'size': [30, 30]}"/>
+                <field name="name" />
+                <field name="email" />
+                <field name="author_mail_qty" />
+                <field name="formatted_address" optional="hide" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_webmail_contact_form" model="ir.ui.view">
+        <field name="model">webmail.contact</field>
+        <field name="arch" type="xml">
+            <form>
+                <header />
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button
+                            name="action_view_mails"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-envelope-o"
+                            invisible="author_mail_qty == 0"
+                        >
+                            <field name="author_mail_qty" widget="statinfo" string="Mails" />
+                        </button>
+                    </div>
+
+                    <field name="image_1920" widget='image' class="oe_avatar" options='{"zoom": true, "preview_image": "avatar_128"}'/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                        <label for="email"/>
+                        <h2><field name="email"/></h2>
+                    </div>
+                    <group>
+                        <field name="formatted_address" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_webmail_contact" model="ir.actions.act_window">
+        <field name="name">Contacts</field>
+        <field name="path">webmail-contact</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">webmail.contact</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <menuitem
+        id="menu_webmail_contact"
+        name="contacts"
+        parent="menu_root"
+        action="action_webmail_contact"
+        sequence="5"
+    />
+
+</odoo>

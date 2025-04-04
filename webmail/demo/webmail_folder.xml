@@ -5,10 +5,16 @@
     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 -->
 <odoo>
-    <record id="demo_webmail_folder" model="webmail.folder">
+    <record id="demo_folder_inbox" model="webmail.folder">
         <field name="name">INBOX</field>
         <field name="technical_name">INBOX</field>
-        <field name="webmail_account_id" ref="webmail.demo_webmail_account" />
+        <field name="account_id" ref="webmail.demo_webmail_account" />
+    </record>
+
+    <record id="demo_folder_sent" model="webmail.folder">
+        <field name="name">Sent</field>
+        <field name="technical_name">Sent</field>
+        <field name="account_id" ref="webmail.demo_webmail_account" />
     </record>
 
 </odoo>

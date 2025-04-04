@@ -11,7 +11,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <search>
                 <field name="login" />
-                <field name="url" />
+                <field name="provider_id" />
             </search>
         </field>
     </record>
@@ -21,19 +21,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <list>
                 <field name="login" />
-                <field name="url" />
-                <field name="folder_qty" />
-                <button
-                    string="Fetch Folders"
-                    type="object"
-                    name="button_fetch_folders"
-                />
-                <field name="mail_qty" />
-                <button
-                    string="Fetch Mails (by Batch)"
-                    type="object"
-                    name="button_fetch_mails_by_batch"
-                />
+                <field name="provider_id" />
+                <field name="imap_url" optional="show" />
+                <field name="imap_port" optional="show"/>
+                <field name="smtp_url" optional="show"/>
+                <field name="smtp_port" optional="show"/>
             </list>
         </field>
     </record>
@@ -86,10 +78,15 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     </div>
                     <group>
                         <group>
-                            <field name="url" />
+                            <field name="provider_id" />
+                            <field name="imap_url" />
+                            <field name="imap_port"/>
+                            <field name="smtp_url" />
+                            <field name="smtp_port"/>
                             <field name="login" />
-                            <field name="password" />
+                            <field name="password" password="True" />
                             <field name="user_id" />
+                            <field name="cron_id" />
                         </group>
                     </group>
                 </sheet>
@@ -99,6 +96,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
     <record id="action_webmail_account" model="ir.actions.act_window">
         <field name="name">Accounts</field>
+        <field name="path">webmail-account</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">webmail.account</field>
         <field name="view_mode">list,form</field>

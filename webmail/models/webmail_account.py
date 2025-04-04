@@ -8,16 +8,25 @@ import socket
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from .tools import decode_imap4_utf7
-
 
 class WebmailAccount(models.Model):
     _name = "webmail.account"
     _description = "Webmail Accounts"
-
     _rec_name = "login"
 
-    url = fields.Char(required=True)
+    provider_id = fields.Many2one(comodel_name="webmail.provider", required=True)
+
+    imap_url = fields.Char(required=True, compute="_compute_url_port", readonly=False)
+
+    imap_port = fields.Integer(
+        required=True, compute="_compute_url_port", readonly=False
+    )
+
+    smtp_url = fields.Char(required=True, compute="_compute_url_port", readonly=False)
+
+    smtp_port = fields.Integer(
+        required=True, compute="_compute_url_port", readonly=False
+    )
 
     login = fields.Char(required=True)
 
@@ -27,15 +36,43 @@ class WebmailAccount(models.Model):
 
     folder_ids = fields.One2many(
         comodel_name="webmail.folder",
-        inverse_name="webmail_account_id",
+        inverse_name="account_id",
         readonly=True,
+    )
+
+    cron_id = fields.Many2one(
+        string="Odoo Cron",
+        comodel_name="ir.cron",
+        readonly=True,
+        help="Cron Task that will fetch account mails",
+        ondelete="cascade",
     )
 
     folder_qty = fields.Integer(compute="_compute_folder_qty", store=True)
 
     mail_qty = fields.Integer(compute="_compute_mail_qty", store=True)
 
+    # ###########################
+    # Overload Section
+    # ###########################
+    @api.model_create_multi
+    def create(self, vals_list):
+        accounts = super().create(vals_list)
+        for account in accounts:
+            account.cron_id = self.env["ir.cron"].create(account._prepare_cron())
+        return accounts
+
+    # ###########################
     # Compute Section
+    # ###########################
+    @api.depends("provider_id")
+    def _compute_url_port(self):
+        for account in self.filtered(lambda x: x.provider_id):
+            account.imap_url = account.imap_url or account.provider_id.imap_url
+            account.imap_port = account.imap_port or account.provider_id.imap_port
+            account.smtp_url = account.smtp_url or account.provider_id.smtp_url
+            account.smtp_port = account.smtp_port or account.provider_id.smtp_port
+
     @api.depends("folder_ids")
     def _compute_folder_qty(self):
         for account in self:
@@ -49,7 +86,7 @@ class WebmailAccount(models.Model):
     # Action Section
     def button_test_connexion(self):
         self.ensure_one()
-        client = self._get_client_connected()
+        client = self._get_imap_client_connected()
         client.close()
         client.logout()
 
@@ -57,7 +94,7 @@ class WebmailAccount(models.Model):
         self._fetch_folders()
 
     def button_fetch_mails_by_batch(self):
-        for folder in self.mapped("folder_ids").filtered(lambda x: x.mail_qty == 0):
+        for folder in self.mapped("folder_ids"):
             folder._fetch_mails()
             self.env.cr.commit()  # pylint: disable=invalid-commit
 
@@ -78,18 +115,20 @@ class WebmailAccount(models.Model):
         return action
 
     # Private Section
-    def _get_client_connected(self):
+    def _get_imap_client_connected(self):
         self.ensure_one()
         try:
-            client = imaplib.IMAP4_SSL(self.url)
+            client = imaplib.IMAP4_SSL(self.imap_url, self.imap_port)
         except socket.gaierror as e:
             raise UserError(
                 _(
-                    "server '%s' has not been reached. Possible Reasons: \n"
+                    "server '%(url)s:%(port)s' has not been reached."
+                    " Possible Reasons: \n"
                     "- the server doesn't exist"
-                    "- your odoo instance faces to network issue"
+                    "- your odoo instance faces to network issue",
+                    url=self.imap_url,
+                    port=self.imap_port,
                 )
-                % (self.url)
             ) from e
 
         try:
@@ -107,14 +146,30 @@ class WebmailAccount(models.Model):
 
     def _fetch_folders(self):
         for account in self:
-            client = account._get_client_connected()
+            client = account._get_imap_client_connected()
             status, folder_datas = client.list()
             client.logout()
 
             for folder_data in folder_datas:
-                data = decode_imap4_utf7(folder_data.decode())
-                technical_name = data.split(' "/" ')[-1]
-                if technical_name.startswith('"') and technical_name.endswith('"'):
-                    technical_name = technical_name[1:-1]
+                self.env["webmail.folder"]._create_if_not_exists(account, folder_data)
 
-                self.env["webmail.folder"]._get_or_create(account, technical_name)
+    @api.model
+    def _fetch_mail_by_cron(self, account_ids):
+        for account in self.browse(account_ids):
+            account.mapped("folder_ids").filtered(
+                lambda x: x.included_in_cron_fetch
+            )._fetch_mails()
+
+    def _prepare_cron(self):
+        self.ensure_one()
+        return {
+            "name": f"Fetch Mails for account #{self.id}",
+            "interval_type": "minutes",
+            "interval_number": 10,
+            "model_id": self.env["ir.model"]
+            .search([("model", "=", self._name)], limit=1)
+            .id,
+            "state": "code",
+            "code": f"model._fetch_mail_by_cron({self.ids})",
+            "active": False,
+        }
