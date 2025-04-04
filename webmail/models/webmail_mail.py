@@ -307,17 +307,15 @@ class WebmailMail(models.Model):
         mail = self.create(vals)
 
         if not conversation:
-            author_image_url = (
-                f"/web/image/webmail.contact/{mail.author_contact_id.id}/avatar_256"
-            )
+            author = mail.author_contact_id
             notify_message = f"""
 
             <img
                 class="o_avatar o_m2m_avatar position-relative rounded"
                 style="width: 64px;height: 64px;"
-                src="{author_image_url}" />
+                src="/web/image/webmail.contact/{author.id}/avatar_256" />
                 <br />
-            <b>Author: </b>{mail.author_contact_id.name}<br />
+            <b>Author: </b>{author.name}<br />
             <b>Subject: </b>{mail.subject}
             """
             webmail_folder.account_id.user_id.notify_info(
