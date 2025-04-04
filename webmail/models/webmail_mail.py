@@ -303,13 +303,27 @@ class WebmailMail(models.Model):
 
         if conversation:
             vals["conversation_id"] = conversation.id
-        else:
-            webmail_folder.account_id.user_id.notify_info(
-                title="New mail",
-                message=f"<b>Subject</b><br />{message_dict.get('subject')}",
-                sticky=True,
-            )
+
         mail = self.create(vals)
+
+        if not conversation:
+            author_image_url = (
+                f"/web/image/webmail.contact/{mail.author_contact_id.id}/avatar_256"
+            )
+            notify_message = f"""
+
+            <img
+                class="o_avatar o_m2m_avatar position-relative rounded"
+                style="width: 64px;height: 64px;"
+                src="{author_image_url}" />
+                <br />
+            <b>Author: </b>{mail.author_contact_id.name}<br />
+            <b>Subject: </b>{mail.subject}
+            """
+            webmail_folder.account_id.user_id.notify_info(
+                title="New mail", message=notify_message
+            )
+
         if message_dict["attachments"]:
             res = self.env["mail.thread"]._process_attachments_for_post(
                 message_dict["attachments"],
