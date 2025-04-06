@@ -63,6 +63,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                 <field name="mail_qty" string="" invisible="mail_qty == 1"/>
                 <field name="subject"/>
                 <field name="last_mail_date_pretty" string="Date"/>
+                <field name="mail_nb_attachment" widget="nb_attachment" nolabel="1" readonly="True" optional="hide" invisible="mail_nb_attachment == 0"/>
+                <button name="action_get_attachment_view" type="object" icon="fa-paperclip" aria-label="View Attachments" title="View Attachments" class="float-end pe-0" readonly="True" invisible="mail_nb_attachment == 0"/>
                 <field name="first_mail_date" optional="hide"/>
                 <field name="last_mail_date" optional="hide"/>
                 <field name="has_been_read" optional="hide" widget="boolean_toggle" string="Read"/>

@@ -81,7 +81,13 @@ class WebmailConversation(models.Model):
     )
 
     message_nb_attachment = fields.Integer(
-        string="Number of Attachments", compute="_compute_message_nb_attachment"
+        compute="_compute_message_nb_attachment",
+        help="Number of attachments of the new draft message, if any.",
+    )
+
+    mail_nb_attachment = fields.Integer(
+        compute="_compute_mail_nb_attachment",
+        help="Number of attachments of the all the mails of the conversation.",
     )
 
     has_been_read = fields.Boolean(
@@ -140,6 +146,25 @@ class WebmailConversation(models.Model):
         for conversation in self:
             conversation.message_nb_attachment = attachment.get(
                 conversation._origin.id, 0
+            )
+
+    def _compute_mail_nb_attachment(self):
+        attachment_data = self.env["ir.attachment"]._read_group(
+            [
+                ("res_model", "=", "webmail.mail"),
+                ("res_id", "in", self.mapped("mail_ids").ids),
+                ("access_token", "=", False),
+            ],
+            ["res_id"],
+            ["__count"],
+        )
+        attachment = dict(attachment_data)
+        for conversation in self:
+            conversation.mail_nb_attachment = sum(
+                [
+                    attachment.get(mail_id, 0)
+                    for mail_id in conversation._origin.mail_ids.ids
+                ]
             )
 
     def _compute_read_me(self):
@@ -254,6 +279,20 @@ class WebmailConversation(models.Model):
     # ###########################
     # Button and Action section
     # ###########################
+    def action_get_attachment_view(self):
+        self.ensure_one()
+        res = self.env["ir.actions.act_window"]._for_xml_id("base.action_attachment")
+        res.update(
+            {
+                "domain": [
+                    ("res_model", "=", "webmail.mail"),
+                    ("res_id", "in", self.mapped("mail_ids").ids),
+                    ("access_token", "=", False),
+                ],
+            }
+        )
+        return res
+
     def button_mark_as_read(self):
         self.write({"has_been_read": True})
 
