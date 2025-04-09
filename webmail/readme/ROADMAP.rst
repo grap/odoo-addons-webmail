@@ -6,3 +6,8 @@
 * improve attachments:
   * [] avoiding attachments duplication where data are the same.
        (maybe a dedicated module)
+
+
+* Mauvais "To":
+  * http://localhost:8018/odoo/webmail-conversation/9222
+  * si pas de destinataire
