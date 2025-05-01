@@ -335,7 +335,7 @@ class WebmailMail(models.Model):
         self.ensure_one()
         return {
             "account_id": self.account_id.id,
-            "draft_message": False,
+            "message_state": "no",
         }
 
     def _erase_mail(self):

@@ -67,7 +67,16 @@ class WebmailConversation(models.Model):
 
     content = fields.Html("Contents", compute="_compute_content")
 
-    draft_message = fields.Boolean(readonly=True, default=True)
+    message_state = fields.Selection(
+        selection=[
+            ("no", "No Message"),
+            ("draft_message", "Draft Message"),
+            ("draft_reply", "Draft Reply"),
+            ("draft_forward", "Draft Forward"),
+        ],
+        default="draft_message",
+        readonly=True,
+    )
 
     message_subject = fields.Char()
 
