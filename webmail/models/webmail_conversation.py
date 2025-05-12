@@ -67,7 +67,16 @@ class WebmailConversation(models.Model):
 
     content = fields.Html("Contents", compute="_compute_content")
 
-    draft_message = fields.Boolean(readonly=True, default=True)
+    message_state = fields.Selection(
+        selection=[
+            ("no", "No Message"),
+            ("draft_message", "Draft Message"),
+            ("draft_reply", "Draft Reply"),
+            ("draft_forward", "Draft Forward"),
+        ],
+        default="draft_message",
+        readonly=True,
+    )
 
     message_subject = fields.Char()
 
@@ -258,7 +267,7 @@ class WebmailConversation(models.Model):
         self.write({"has_been_read": True})
 
     def button_mark_as_unread(self):
-        self.write({"has_been_unread": False})
+        self.write({"has_been_read": False})
 
     def button_merge(self):
         self._merge()
@@ -266,7 +275,7 @@ class WebmailConversation(models.Model):
     def button_write_message(self):
         self.write(
             {
-                "draft_message": True,
+                "message_state": "draft_message",
                 "to_contact_ids": [],
                 "cc_contact_ids": [],
                 "message_subject": "",
@@ -287,7 +296,7 @@ class WebmailConversation(models.Model):
             default_subject = f"Re: {default_subject}"
         self.write(
             {
-                "draft_message": True,
+                "message_state": "draft_reply",
                 "to_contact_ids": [Command.set(to_contacts.ids)],
                 "cc_contact_ids": [],
                 "message_subject": default_subject,
@@ -312,7 +321,7 @@ class WebmailConversation(models.Model):
     def button_drop_draft_message(self):
         self.write(
             {
-                "draft_message": False,
+                "message_state": "no",
                 "message_body": False,
                 "to_contact_ids": [Command.clear()],
                 "cc_contact_ids": [Command.clear()],
