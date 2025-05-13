@@ -124,7 +124,7 @@ class TestImap(TransactionCase):
             self.patch(self.registry["ir.mail_server"], "send_email", send_email)
             conversation.write(
                 {
-                    "draft_message": True,
+                    "message_state": "draft_reply",
                     "message_subject": "Re!",
                     "to_contact_ids": [Command.set(self.webmail_contact.ids)],
                     "message_body": "<div>OK !!!!</div>",
@@ -132,7 +132,7 @@ class TestImap(TransactionCase):
             )
 
             conversation.button_send_message()
-            self.assertFalse(conversation.draft_message)
+            self.assertEqual(conversation.message_state, "no")
 
             # #######################
             # Erase Mail

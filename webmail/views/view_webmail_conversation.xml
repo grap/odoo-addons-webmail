@@ -28,8 +28,8 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <list decoration-bf="has_been_read == False"
                 multi_edit="1"
-                decoration-info="draft_message == True"
-                decoration-it="draft_message == True">
+                decoration-info="message_state != 'no'"
+                decoration-it="message_state != 'no'">
                 <header>
                     <button name="button_merge"
                         type="object"
@@ -74,6 +74,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     class="fa fa-trash"
                     context="{'erase_mail': True}"
                     confirm="Are you sure you want to drop the mail(s) on the server ?"/>
+                <field name="message_state" invisible="1"/>
             </list>
         </field>
     </record>
@@ -83,25 +84,25 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
         <field name="arch" type="xml">
             <form>
                 <header>
-                    <button name="action_archive" data-hotkey="z" string=" Archive" class="btn-secondary oi oi-archive" type="object" invisible="not active or mail_qty == 0 or draft_message == True"/>
-                    <button name="action_unarchive" data-hotkey="z" string=" Unarchive" class="btn-secondary oi oi-unarchive" type="object" invisible="active or draft_message == True"/>
+                    <button name="action_archive" data-hotkey="z" string=" Archive" class="btn-secondary oi oi-archive" type="object" invisible="not active or mail_qty == 0 or message_state != 'no'"/>
+                    <button name="action_unarchive" data-hotkey="z" string=" Unarchive" class="btn-secondary oi oi-unarchive" type="object" invisible="active or message_state != 'no'"/>
 
                     <button name="unlink" data-hotkey="Delete" string=" Erase" class="btn-danger fa fa-trash" type="object"
                         context="{'erase_mail': True}"
-                        invisible="mail_qty == 0 or draft_message == True"
+                        invisible="mail_qty == 0 or message_state != 'no'"
                         confirm="Are you sure you want to drop the mail(s) on the server ?"/>
 
-                    <button name="button_write_message" data-hotkey="w" string=" Write Message" class="btn-primary fa fa-pencil-square-o" type="object" invisible="draft_message == True or mail_qty != 0"/>
+                    <button name="button_write_message" data-hotkey="w" string=" Write Message" class="btn-primary fa fa-pencil-square-o" type="object" invisible="message_state != 'no' or mail_qty != 0"/>
 
-                    <button name="button_answer_single" data-hotkey="r" string=" Answer" class="btn-primary fa fa-user" type="object" invisible="draft_message == True or mail_qty == 0"/>
+                    <button name="button_answer_single" data-hotkey="r" string=" Answer" class="btn-primary fa fa-user" type="object" invisible="message_state != 'no' or mail_qty == 0"/>
 
-                    <button name="button_answer_multi" data-hotkey="a" string=" Answer to All" class="btn-primary fa fa-users" type="object" invisible="draft_message == True or mail_qty == 0"/>
+                    <button name="button_answer_multi" data-hotkey="a" string=" Answer to All" class="btn-primary fa fa-users" type="object" invisible="message_state != 'no' or mail_qty == 0"/>
 
-                    <button name="button_drop_draft_message" data-hotkey="d" string=" Drop Draft Message" class="btn-warning fa fa-undo" type="object" invisible="draft_message == False or mail_qty == 0" confirm="Are you sure to delete your draft message"/>
+                    <button name="button_drop_draft_message" data-hotkey="d" string=" Drop Draft Message" class="btn-warning fa fa-undo" type="object" invisible="message_state == 'no' or mail_qty == 0" confirm="Are you sure to delete your draft message"/>
 
-                    <widget name="attach_document" string="Attach Receipt" action="attach_document" invisible="draft_message == False"/>
+                    <widget name="attach_document" string="Attach Receipt" action="attach_document" invisible="message_state == 'no'"/>
 
-                    <button name="button_send_message" data-hotkey="Enter" string=" Send Message" class="btn-success fa fa-paper-plane" type="object" invisible="draft_message == False"/>
+                    <button name="button_send_message" data-hotkey="Enter" string=" Send Message" class="btn-success fa fa-paper-plane" type="object" invisible="message_state == 'no'"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
@@ -118,11 +119,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
                     <field name="read_me" invisible="1"/>
                     <field name="active" invisible="1"/>
+                    <field name="message_state" invisible="1"/>
                     <!-- ===================== -->
                     <!-- Compose Mode Enabled  -->
                     <!-- ===================== -->
-                    <group invisible="draft_message == False">
-                        <field name="draft_message" invisible="1"/>
+                    <group invisible="message_state == 'no'">
                         <field name="account_id" invisible="mail_qty != 0" options="{'no_create': True}" string="From"/>
                         <field name="to_contact_ids" widget="many2many_tags" string="To" context="{'active_test': True}"/>
                         <field name="cc_contact_ids" widget="many2many_tags" string="Cc" context="{'active_test': True}"/>
@@ -137,7 +138,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                     <!-- ===================== -->
                     <!-- Compose Mode Disabled -->
                     <!-- ===================== -->
-                    <group invisible="draft_message == True">
+                    <group invisible="message_state != 'no'">
                         <h1><field name="subject"/></h1>
                         <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
                     </group>
