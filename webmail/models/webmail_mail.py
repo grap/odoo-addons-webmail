@@ -140,7 +140,10 @@ class WebmailMail(models.Model):
     def _compute_counter_text(self):
         for mail in self:
             total = mail.conversation_id.mail_qty
-            counter = total - mail.conversation_id.mail_ids.ids.index(mail.id)
+            if mail.id in mail.conversation_id.mail_ids.ids:
+                counter = total - mail.conversation_id.mail_ids.ids.index(mail.id)
+            else:
+                counter = 0
             mail.counter_text = f"{counter} / {total}"
 
     @api.depends("from_text", "original_from_text")
