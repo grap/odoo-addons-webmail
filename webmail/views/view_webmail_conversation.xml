@@ -154,7 +154,7 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                                             <div class="mail_header_content" style="float:left;">
                                                 <field name="counter_text" class="kanban_mail_inline_counter"/>
                                             </div>
-                                            <div class="mail_header_content" style="float:left;">
+                                            <div class="mail_header_content" style="float:left;max-height:50px">
                                                 <field name="author_avatar_256" widget="image" class="oe_avatar" options="{'preview_image': 'author_avatar_256', 'size': [50, 50]}"/>
                                             </div>
                                             <div class="mail_header_content">
