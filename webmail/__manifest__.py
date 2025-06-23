@@ -15,7 +15,7 @@
         # OCA
         "web_notify",
     ],
-    "external_dependencies": {"python": ["imapclient", "beautifulsoup4", "imap-tools"]},
+    "external_dependencies": {"python": ["imap-tools"]},
     "data": [
         "security/ir_module_category.xml",
         "security/ir_rule.xml",
