@@ -39,3 +39,9 @@ def decode_imap4_utf7(s: str) -> str:
 
 def clean_subject(subject):
     return re.sub(r"(((RE)|(Re)|(Fwd)|(TR)): )+", "", subject)
+
+
+def client_select(client, folder_name):
+    print("client_select", folder_name)
+    status, select_code = client.select(folder_name)
+    return status, select_code

@@ -163,11 +163,11 @@ License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
                                                 <field name="date" class="kanban_mail_inline kanban_mail_inline_field"/>
                                                 <br />
                                             </div>
-                                            <div class="mail_header_content">
+                                            <div class="mail_header_content" style="min-height: 0px;">
                                                 <span class="kanban_mail_inline kanban_mail_inline_static" style="float: left; vertical-align: top; line-height: 20px;">To: </span>
                                                 <field name="to_contact_ids" class="kanban_mail_inline_to_fields"/>
                                             </div>
-                                            <div class="mail_header_content" invisible="cc_contact_qty == 0">
+                                            <div class="mail_header_content" style="min-height: 0px;" invisible="cc_contact_qty == 0">
                                                 <span class="kanban_mail_inline kanban_mail_inline_static" style="float: left; vertical-align: top; line-height: 20px;">Cc: </span>
                                                 <field name="cc_contact_ids" class="kanban_mail_inline_cc_fields"/>
                                                 <field name="cc_contact_qty" invisible="1"/>

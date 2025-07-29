@@ -12,6 +12,7 @@ from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.osv import expression
 from odoo.tools.mail import decode_message_header, email_split_and_format
+from .tools import client_select
 
 _logger = logging.getLogger(__name__)
 
@@ -366,7 +367,7 @@ class WebmailMail(models.Model):
         """Find an email in the distant imap folder and return then 'num'
         of the email, or False if not found."""
         self.ensure_one()
-        client.select(self.folder_id.technical_name)
+        client_select(client, self.folder_id.technical_name)
 
         # First, look by Message-ID
         status, search_result = client.search(
