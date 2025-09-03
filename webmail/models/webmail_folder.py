@@ -11,7 +11,7 @@ from dateutil.relativedelta import relativedelta
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from .tools import decode_imap4_utf7
+from .tools import client_select, decode_imap4_utf7
 
 _logger = logging.getLogger(__name__)
 
@@ -171,7 +171,9 @@ class WebmailFolder(models.Model):
     def _fetch_mails(self):
         for webmail_folder in self:
             client = webmail_folder.account_id._get_imap_client_connected()
-            status, select_code = client.select(f'"{webmail_folder.technical_name}"')
+            status, _select_code = client_select(
+                client, f'"{webmail_folder.technical_name}"'
+            )
             if status != "OK":
                 client.logout()
                 raise UserError(

@@ -19,9 +19,6 @@
   width: 100% !important;
 }
 
-
-
-
 .kanban_mail_inline{
   padding-left: 3px;
 }
@@ -49,15 +46,13 @@
 .mail_header_content {
   padding: 0px;
   background-color: #FFD;
-  height: 50px;
-  line-height: 50px;
+  min-height: 50px;
   border: 1px solid lightgray;
 }
 
 .odoo-editor-editable {
   min-height:200px;
 }
-
 
 .attachment_inline ul li{
   margin: 5px;
