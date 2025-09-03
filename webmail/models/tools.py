@@ -42,6 +42,5 @@ def clean_subject(subject):
 
 
 def client_select(client, folder_name):
-    print("client_select", folder_name)
     status, select_code = client.select(folder_name)
     return status, select_code

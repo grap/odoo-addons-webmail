@@ -12,6 +12,7 @@ from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError
 from odoo.osv import expression
 from odoo.tools.mail import decode_message_header, email_split_and_format
+
 from .tools import client_select
 
 _logger = logging.getLogger(__name__)
@@ -289,7 +290,6 @@ class WebmailMail(models.Model):
             "identifier": identifier,
             "reply_identifier": email_message["In-Reply-To"],
             "date": message_dict["date"],
-            "data": email_message.as_string(),
             "folder_id": webmail_folder.id,
             "subject": message_dict.get("subject"),
             "original_from_text": message_dict.get("x_original_from"),
@@ -298,6 +298,11 @@ class WebmailMail(models.Model):
             "cc_text": message_dict["cc"],
             "body": message_dict["body"],
         }
+        try:
+            vals["data"] = email_message.as_string()
+        except:
+            vals["data"] = ""
+            _logger.error(f"Failed to analyze correctly data of mail: {vals}")
 
         _logger.debug(
             f"[FETCH] {webmail_folder.account_id.login} /"
